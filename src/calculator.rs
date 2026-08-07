@@ -22,14 +22,15 @@ pub enum CalculatorError {
 }
 pub fn calculate(input: CalculatorInput) -> Result<CalculatorResult, CalculatorError> {
     let rocket = input.rocket;
+    let engine = rocket.engine.spec();
     let fuel = rocket.fuel_amount;
     if fuel < 0.0 {
         return Err(CalculatorError::NegativeFuel);
     }
-    let fuel_per_hex = rocket.engine.spec().fuel_per_hex;
-    let (exact_range, restrict) = if rocket.engine.spec().requires_oxidizer {
+    let fuel_per_hex = engine.fuel_per_hex;
+    let (exact_range, restrict) = if engine.requires_oxidizer {
         let oxi = rocket
-            .oxidizerinput
+            .oxidizer_input
             .ok_or(CalculatorError::MissingOxidizer)?;
         if oxi.oxidizer_amount < 0.0 {
             return Err(CalculatorError::NegativeOxidizer);
@@ -63,7 +64,7 @@ mod tests {
             rocket: RocketInput {
                 engine: EngineKind::Hydrogen,
                 fuel_amount: 1000.0,
-                oxidizerinput: Some(OxidizerInput {
+                oxidizer_input: Some(OxidizerInput {
                     oxidizer: OxidizerKind::OxyRock, // 效率 2.0
                     oxidizer_amount: 400.0,          // 实际可用 800.0
                 }),
@@ -86,7 +87,7 @@ mod tests {
             rocket: RocketInput {
                 engine: EngineKind::Hydrogen,
                 fuel_amount: 800.0,
-                oxidizerinput: Some(OxidizerInput {
+                oxidizer_input: Some(OxidizerInput {
                     oxidizer: OxidizerKind::LiquidOxygen, // 效率 4.0
                     oxidizer_amount: 200.0,               // 实际可用 800.0
                 }),
@@ -108,7 +109,7 @@ mod tests {
             rocket: RocketInput {
                 engine: EngineKind::Hydrogen,
                 fuel_amount: 900.0,
-                oxidizerinput: None, // 没带氧化剂！
+                oxidizer_input: None, // 没带氧化剂！
             },
         };
         let output = calculate(input);
@@ -120,7 +121,7 @@ mod tests {
             rocket: RocketInput {
                 engine: EngineKind::Steam,
                 fuel_amount: 500.0,
-                oxidizerinput: None, // 不需要氧化剂
+                oxidizer_input: None, // 不需要氧化剂
             },
         };
         let output = calculate(input).unwrap();
@@ -139,7 +140,7 @@ mod tests {
             rocket: RocketInput {
                 engine: EngineKind::Hydrogen,
                 fuel_amount: 500.0,
-                oxidizerinput: Some(OxidizerInput {
+                oxidizer_input: Some(OxidizerInput {
                     oxidizer: OxidizerKind::OxyRock,
                     oxidizer_amount: -200.0,
                 }),
@@ -154,7 +155,7 @@ mod tests {
             rocket: RocketInput {
                 engine: EngineKind::Steam,
                 fuel_amount: -200.0,
-                oxidizerinput: None,
+                oxidizer_input: None,
             },
         };
         let output = calculate(input);

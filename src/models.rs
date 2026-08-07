@@ -72,5 +72,5 @@ pub struct OxidizerInput {
 pub struct RocketInput {
     pub engine: EngineKind,
     pub fuel_amount: f32,
-    pub oxidizerinput: Option<OxidizerInput>,
+    pub oxidizer_input: Option<OxidizerInput>,
 }
