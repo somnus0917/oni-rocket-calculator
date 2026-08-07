@@ -1,84 +1,9 @@
-#[derive(Debug, Clone, Copy)]
-struct EngineSpec {
-    id: &'static str,
-    name: &'static str,
-    fuel_name: &'static str,
-    fuel_per_hex: f32,
-    requires_oxidizer: bool,
-}
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum EngineKind {
-    Hydrogen,
-    Steam,
-}
-impl EngineKind {
-    fn spec(self) -> EngineSpec {
-        match self {
-            EngineKind::Hydrogen => EngineSpec {
-                id: "HydrogenEngineCluster",
-                name: "液氢引擎",
-                fuel_name: "液氢",
-                fuel_per_hex: 56.25,
-                requires_oxidizer: true,
-            },
-            EngineKind::Steam => EngineSpec {
-                id: "SteamEngine",
-                name: "蒸汽引擎",
-                fuel_name: "蒸汽",
-                fuel_per_hex: 20.0,
-                requires_oxidizer: false, // 蒸汽引擎不需要氧化剂
-            },
-        }
-    }
-}
-#[derive(Debug, Clone, Copy)]
-struct OxidizerSpec {
-    id: &'static str,
-    name: &'static str,
-    efficiency: f32,
-}
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum OxidizerKind {
-    Fertilizer,
-    OxyRock,
-    LiquidOxygen,
-}
-impl OxidizerKind {
-    const fn spec(self) -> OxidizerSpec {
-        match self {
-            OxidizerKind::Fertilizer => OxidizerSpec {
-                id: "fertilizer",
-                name: "肥料",
-                efficiency: 1.0,
-            },
-            OxidizerKind::OxyRock => OxidizerSpec {
-                id: "OxyRock",
-                name: "氧石",
-                efficiency: 2.0,
-            },
-            OxidizerKind::LiquidOxygen => OxidizerSpec {
-                id: "LiquidOxygen",
-                name: "液氧",
-                efficiency: 4.0,
-            },
-        }
-    }
-}
-#[derive(Debug, Clone, Copy)]
-struct OxidizerInput {
-    oxidizer: OxidizerKind,
-    oxidizer_amount: f32,
-}
-struct RocketSpec {
-    engine: EngineSpec,
-    fuel_amount: f32,
-    oxidizerinput: Option<OxidizerInput>,
-}
+use crate::models::*;
 pub struct CalculatorInput {
-    pub rocket: RocketSpec,
+    pub rocket: RocketInput,
 }
 #[derive(Debug, PartialEq)]
-enum LimitingResource {
+pub enum LimitingResource {
     Fuel,
     Oxidizer,
     Balance,
@@ -101,8 +26,8 @@ pub fn calculate(input: CalculatorInput) -> Result<CalculatorResult, CalculatorE
     if fuel < 0.0 {
         return Err(CalculatorError::NegativeFuel);
     }
-    let fuel_per_hex = rocket.engine.fuel_per_hex;
-    let (exact_range, restrict) = if rocket.engine.requires_oxidizer {
+    let fuel_per_hex = rocket.engine.spec().fuel_per_hex;
+    let (exact_range, restrict) = if rocket.engine.spec().requires_oxidizer {
         let oxi = rocket
             .oxidizerinput
             .ok_or(CalculatorError::MissingOxidizer)?;
@@ -123,21 +48,20 @@ pub fn calculate(input: CalculatorInput) -> Result<CalculatorResult, CalculatorE
     Ok(CalculatorResult {
         restrict,
         exact_range,
-        complete_range: exact_range as u32,
+        complete_range: exact_range.floor() as u32,
     })
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::calculator::CalculatorError::MissingOxidizer;
-
     use super::*;
+    use crate::calculator::CalculatorError::MissingOxidizer;
 
     #[test]
     fn oxyrock_hydrogen() {
         let input = CalculatorInput {
-            rocket: RocketSpec {
-                engine: EngineKind::Hydrogen.spec(),
+            rocket: RocketInput {
+                engine: EngineKind::Hydrogen,
                 fuel_amount: 1000.0,
                 oxidizerinput: Some(OxidizerInput {
                     oxidizer: OxidizerKind::OxyRock, // 效率 2.0
@@ -159,8 +83,8 @@ mod tests {
     #[test]
     fn liquidoxygen_hydrogen() {
         let input = CalculatorInput {
-            rocket: RocketSpec {
-                engine: EngineKind::Hydrogen.spec(),
+            rocket: RocketInput {
+                engine: EngineKind::Hydrogen,
                 fuel_amount: 800.0,
                 oxidizerinput: Some(OxidizerInput {
                     oxidizer: OxidizerKind::LiquidOxygen, // 效率 4.0
@@ -181,8 +105,8 @@ mod tests {
     #[test]
     fn no_oxidizer_hydrogen() {
         let input = CalculatorInput {
-            rocket: RocketSpec {
-                engine: EngineKind::Hydrogen.spec(),
+            rocket: RocketInput {
+                engine: EngineKind::Hydrogen,
                 fuel_amount: 900.0,
                 oxidizerinput: None, // 没带氧化剂！
             },
@@ -193,8 +117,8 @@ mod tests {
     #[test]
     fn steam() {
         let input = CalculatorInput {
-            rocket: RocketSpec {
-                engine: EngineKind::Steam.spec(),
+            rocket: RocketInput {
+                engine: EngineKind::Steam,
                 fuel_amount: 500.0,
                 oxidizerinput: None, // 不需要氧化剂
             },
@@ -212,8 +136,8 @@ mod tests {
     #[test]
     fn negative_oxizidizer() {
         let input = CalculatorInput {
-            rocket: RocketSpec {
-                engine: EngineKind::Hydrogen.spec(),
+            rocket: RocketInput {
+                engine: EngineKind::Hydrogen,
                 fuel_amount: 500.0,
                 oxidizerinput: Some(OxidizerInput {
                     oxidizer: OxidizerKind::OxyRock,
@@ -227,8 +151,8 @@ mod tests {
     #[test]
     fn negative_fuel() {
         let input = CalculatorInput {
-            rocket: RocketSpec {
-                engine: EngineKind::Steam.spec(),
+            rocket: RocketInput {
+                engine: EngineKind::Steam,
                 fuel_amount: -200.0,
                 oxidizerinput: None,
             },
