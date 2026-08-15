@@ -1,10 +1,11 @@
-use crate::models::{EngineKind, RocketInput};
+use crate::models::{EngineKind, OxidizerKind, RocketInput};
 use leptos::prelude::*;
 #[component]
 pub fn App() -> impl IntoView {
     let oxidizer_amount = RwSignal::new("".to_string());
     let fuel_amount = RwSignal::new("".to_string());
-    let selected_oxidizer = RwSignal::new("".to_string());
+    let oxidizer = RwSignal::new(OxidizerKind::LiquidOxygen);
+    let oxidizer_name = move || oxidizer.get().spec().name;
     let engine = RwSignal::new(EngineKind::Steam);
     let engine_name = move || engine.get().spec().name;
     let requires_oxidizer = move || engine.get().spec().requires_oxidizer;
@@ -60,8 +61,12 @@ pub fn App() -> impl IntoView {
                 <input
                     type="radio"
                     name="oxidizer"
-                    value="liquid_oxygen"
-                    bind:group=selected_oxidizer
+                    prop:checked=move || {
+                        oxidizer.get()==OxidizerKind::LiquidOxygen
+                    }
+                    on:change=move |_|{
+                        oxidizer.set(OxidizerKind::LiquidOxygen);
+                    }
                 />
             </label>
             <label>
@@ -69,8 +74,12 @@ pub fn App() -> impl IntoView {
                 <input
                     type="radio"
                     name="oxidizer"
-                    value="oxidizer_stone"
-                    bind:group=selected_oxidizer
+                    prop:checked=move || {
+                        oxidizer.get()==OxidizerKind::OxyRock
+                    }
+                    on:change=move |_|{
+                        oxidizer.set(OxidizerKind::OxyRock);
+                    }
                 />
             </label>
             <label>
@@ -78,8 +87,12 @@ pub fn App() -> impl IntoView {
                 <input
                     type="radio"
                     name="oxidizer"
-                    value="fertilizer"
-                    bind:group=selected_oxidizer
+                    prop:checked=move || {
+                        oxidizer.get()==OxidizerKind::Fertilizer
+                    }
+                    on:change=move |_|{
+                        oxidizer.set(OxidizerKind::Fertilizer);
+                    }
                 />
             </label>
             <label>
@@ -95,7 +108,7 @@ pub fn App() -> impl IntoView {
         <p>"是否需要氧化剂: " {requires_oxidizer}</p>
 
         <Show when=requires_oxidizer>
-        <p>"你选择的氧化剂是" {selected_oxidizer} "."</p>
+        <p>"你选择的氧化剂是" {oxidizer_name} "."</p>
         <p>"氧化剂量是: " {oxidizer_amount}</p>
         </Show>
         <button on:click=on_calculate>
