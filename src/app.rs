@@ -104,45 +104,26 @@ pub fn App() -> impl IntoView {
         <Show when=requires_oxidizer>
         <fieldset>
             <legend>"氧化剂"</legend>
-            <label>
-                "液氧"
-                <input
-                    type="radio"
-                    name="oxidizer"
-                    prop:checked=move || {
-                        oxidizer.get()==OxidizerKind::LiquidOxygen
+            {
+                OxidizerKind::ALL.into_iter().map(|kind| {
+                    let name = kind.spec().name;
+                    view! {
+                        <label>
+                            {name}
+                            <input
+                            type="radio"
+                            name="oxidizer"
+                            prop:checked=move||{
+                                oxidizer.get()==kind
+                            }
+                            on:change=move|_|{
+                                oxidizer.set(kind);
+                            }
+                            />
+                        </label>
                     }
-                    on:change=move |_|{
-                        oxidizer.set(OxidizerKind::LiquidOxygen);
-                    }
-                />
-            </label>
-            <label>
-                "氧石"
-                <input
-                    type="radio"
-                    name="oxidizer"
-                    prop:checked=move || {
-                        oxidizer.get()==OxidizerKind::OxyRock
-                    }
-                    on:change=move |_|{
-                        oxidizer.set(OxidizerKind::OxyRock);
-                    }
-                />
-            </label>
-            <label>
-                "肥料"
-                <input
-                    type="radio"
-                    name="oxidizer"
-                    prop:checked=move || {
-                        oxidizer.get()==OxidizerKind::Fertilizer
-                    }
-                    on:change=move |_|{
-                        oxidizer.set(OxidizerKind::Fertilizer);
-                    }
-                />
-            </label>
+                }).collect_view()
+            }
             <label>
                 "\n 氧化剂量："
                 <input type="number"

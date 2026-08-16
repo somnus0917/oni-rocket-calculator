@@ -57,6 +57,11 @@ pub enum OxidizerKind {
     LiquidOxygen,
 }
 impl OxidizerKind {
+    pub const ALL: [OxidizerKind; 3] = [
+        OxidizerKind::LiquidOxygen,
+        OxidizerKind::OxyRock,
+        OxidizerKind::Fertilizer,
+    ];
     pub const fn spec(self) -> OxidizerSpec {
         match self {
             OxidizerKind::Fertilizer => OxidizerSpec {
