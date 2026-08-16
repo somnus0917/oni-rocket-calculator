@@ -1,5 +1,6 @@
-use crate::calculator::{CalculatorInput, LimitingResource, calculate};
+use crate::calculator::{CalculatorInput, CalculatorResult, LimitingResource, calculate};
 use crate::models::{EngineKind, OxidizerInput, OxidizerKind, RocketInput};
+use leptos::attr::value;
 use leptos::{ev::MouseEvent, prelude::*};
 #[component]
 pub fn App() -> impl IntoView {
@@ -10,7 +11,8 @@ pub fn App() -> impl IntoView {
     let engine = RwSignal::new(EngineKind::Steam);
     let engine_name = move || engine.get().spec().name;
     let requires_oxidizer = move || engine.get().spec().requires_oxidizer;
-    let result_text = RwSignal::new("".to_string());
+    let result = RwSignal::new(None::<CalculatorResult>);
+    let result_mes = RwSignal::new("".to_string());
     let limiting_resource_name = |resource: &LimitingResource| match resource {
         LimitingResource::Balance => "燃料和氧化剂平衡",
         LimitingResource::Fuel => "燃料",
@@ -27,7 +29,6 @@ pub fn App() -> impl IntoView {
                             oxidizer_amount: amount,
                         }),
                         Err(_) => {
-                            result_text.set("氧化剂输入错误".to_string());
                             return;
                         }
                     }
@@ -41,31 +42,19 @@ pub fn App() -> impl IntoView {
                 };
                 leptos::logging::log!("燃料量: {}", value);
                 let input = CalculatorInput { rocket };
-                let result = calculate(input);
+                let calculated = calculate(input);
 
-                match result {
-                    Ok(result) => {
-                        let restrict_name = limiting_resource_name(&result.restrict);
-                        leptos::logging::log!(
-                            "理论航程: {}, 完整航程: {}, 限制资源: {:?}",
-                            result.exact_range,
-                            result.complete_range,
-                            restrict_name
-                        );
-                        result_text.set(format!(
-                            "理论航程: {:.2}，完整航程: {}，限制资源: {:?}",
-                            result.exact_range, result.complete_range, restrict_name
-                        ));
+                match calculated {
+                    Ok(calculated) => {
+                        result.set(Some(calculated));
                     }
 
                     Err(error) => {
                         leptos::logging::log!("计算错误: {:?}", error);
-                        result_text.set(format!("计算错误: {:?}", error));
                     }
                 }
             }
             Err(_) => {
-                result_text.set("氧化剂量输入错误".to_string());
                 return;
             }
         };
@@ -143,6 +132,15 @@ pub fn App() -> impl IntoView {
         <button on:click=on_calculate>
             "计算"
         </button>
-        <p>{result_text}</p>
+        <Show
+            when=move||result.get().is_some()
+            fallback=||()
+        >
+            {move || {
+                let value =result.get().unwrap();
+                format!("理论航程: {:.2}，完整航程: {}，限制资源: {:?}",
+                    value.exact_range,value.complete_range,value.restrict)
+            }}
+        </Show>
     }
 }

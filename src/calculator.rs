@@ -2,13 +2,13 @@ use crate::models::*;
 pub struct CalculatorInput {
     pub rocket: RocketInput,
 }
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum LimitingResource {
     Fuel,
     Oxidizer,
     Balance,
 }
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub struct CalculatorResult {
     pub restrict: LimitingResource,
     pub exact_range: f32,
