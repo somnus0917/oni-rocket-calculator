@@ -9,18 +9,24 @@ pub fn App() -> impl IntoView {
     let engine = RwSignal::new(EngineKind::Steam);
     let engine_name = move || engine.get().spec().name;
     let requires_oxidizer = move || engine.get().spec().requires_oxidizer;
-    let oxidizer_input = match oxidizer_amount.get().parse::<f32>() {
-        Ok(value) => {
-            let oxidizer = Some(OxidizerInput {
-                oxidizer: oxidizer.get(),
-                oxidizer_amount: value,
-            });
-            oxidizer
-        }
-        Err(_) => None,
-    };
     let on_calculate = move |_| match fuel_amount.get().parse::<f32>() {
         Ok(value) => {
+            let current_engine = engine.get();
+
+            let oxidizer_input = if current_engine.spec().requires_oxidizer {
+                match oxidizer_amount.get().parse::<f32>() {
+                    Ok(amount) => Some(OxidizerInput {
+                        oxidizer: oxidizer.get(),
+                        oxidizer_amount: amount,
+                    }),
+                    Err(_) => {
+                        leptos::logging::log!("氧化剂量输入错误");
+                        return;
+                    }
+                }
+            } else {
+                None
+            };
             let rocket = RocketInput {
                 engine: engine.get(),
                 fuel_amount: value,
