@@ -1,3 +1,5 @@
+use std::fmt::format;
+
 use crate::calculator::{CalculatorInput, CalculatorResult, LimitingResource, calculate};
 use crate::models::{EngineKind, OxidizerInput, OxidizerKind, RocketInput};
 use leptos::{ev::MouseEvent, prelude::*};
@@ -10,6 +12,7 @@ pub fn App() -> impl IntoView {
     let engine = RwSignal::new(EngineKind::Steam);
     let engine_name = move || engine.get().spec().name;
     let requires_oxidizer = move || engine.get().spec().requires_oxidizer;
+    let result_text = RwSignal::new("".to_string());
     let on_calculate = move |_: MouseEvent| {
         match fuel_amount.get().parse::<f32>() {
             Ok(value) => {
@@ -36,6 +39,26 @@ pub fn App() -> impl IntoView {
                 leptos::logging::log!("燃料量: {}", value);
                 let input = CalculatorInput { rocket };
                 let result = calculate(input);
+
+                match result {
+                    Ok(result) => {
+                        leptos::logging::log!(
+                            "理论航程: {}, 完整航程: {}, 限制资源: {:?}",
+                            result.exact_range,
+                            result.complete_range,
+                            result.restrict
+                        );
+                        result_text.set(format!(
+                            "理论航程: {:.2}，完整航程: {}，限制资源: {:?}",
+                            result.exact_range, result.complete_range, result.restrict
+                        ));
+                    }
+
+                    Err(error) => {
+                        leptos::logging::log!("计算错误: {:?}", error);
+                        result_text.set(format!("计算错误: {:?}", error));
+                    }
+                }
             }
             Err(_) => leptos::logging::log!("燃料量输入错误"),
         };
@@ -134,5 +157,6 @@ pub fn App() -> impl IntoView {
         <button on:click=on_calculate>
             "计算"
         </button>
+        <p>{result_text}</p>
     }
 }
