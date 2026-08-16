@@ -10,8 +10,14 @@ pub struct EngineSpec {
 pub enum EngineKind {
     Hydrogen,
     Steam,
+    Petroleum,
 }
 impl EngineKind {
+    pub const ALL: [EngineKind; 3] = [
+        EngineKind::Hydrogen,
+        EngineKind::Petroleum,
+        EngineKind::Steam,
+    ];
     pub fn spec(self) -> EngineSpec {
         match self {
             EngineKind::Hydrogen => EngineSpec {
@@ -27,6 +33,13 @@ impl EngineKind {
                 fuel_name: "蒸汽",
                 fuel_per_hex: 20.0,
                 requires_oxidizer: false, // 蒸汽引擎不需要氧化剂
+            },
+            EngineKind::Petroleum => EngineSpec {
+                id: "PetroleumEngine",
+                name: "石油引擎",
+                fuel_name: "石油",
+                fuel_per_hex: 90.0,
+                requires_oxidizer: true,
             },
         }
     }

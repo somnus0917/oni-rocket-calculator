@@ -1,6 +1,4 @@
-use crate::calculator::{
-    CalculatorError, CalculatorInput, CalculatorResult, LimitingResource, calculate,
-};
+use crate::calculator::{CalculatorInput, LimitingResource, calculate};
 use crate::models::{EngineKind, OxidizerInput, OxidizerKind, RocketInput};
 use leptos::{ev::MouseEvent, prelude::*};
 #[component]
@@ -17,11 +15,6 @@ pub fn App() -> impl IntoView {
         LimitingResource::Balance => "燃料和氧化剂平衡",
         LimitingResource::Fuel => "燃料",
         LimitingResource::Oxidizer => "氧化剂",
-    };
-    let calculator_error_name = |error: &CalculatorError| match error {
-        CalculatorError::MissingOxidizer => "当前引擎需要氧化剂",
-        CalculatorError::NegativeFuel => "燃料量不能为负",
-        CalculatorError::NegativeOxidizer => "氧化剂量不能为负",
     };
     let on_calculate = move |_: MouseEvent| {
         match fuel_amount.get().parse::<f32>() {
@@ -87,28 +80,26 @@ pub fn App() -> impl IntoView {
         </label>
         <fieldset>
             <legend>"火箭选择"</legend>
-            <label>
-                "液氢引擎"
-                <input
-                    type="radio"
-                    name="engine"
-                    prop:checked=move || engine.get() == EngineKind::Hydrogen
-                    on:change=move |_|{
-                        engine.set(EngineKind::Hydrogen);
+            {
+                EngineKind::ALL.into_iter().map(|kind| {
+                    let name = kind.spec().name;
+                    view! {
+                        <label>
+                            {name}
+                            <input
+                                type="radio"
+                                name="engine"
+                                prop:checked=move||{
+                                engine.get()==kind
+                            }
+                            on:change=move|_|{
+                                engine.set(kind);
+                            }
+                            />
+                        </label>
                     }
-                />
-            </label>
-            <label>
-                "蒸汽引擎"
-                <input
-                    type="radio"
-                    name="engine"
-                    prop:checked=move || engine.get() == EngineKind::Steam
-                    on:change=move |_|{
-                        engine.set(EngineKind::Steam);
-                    }
-                />
-            </label>
+                }).collect_view()
+            }
         </fieldset>
         <Show when=requires_oxidizer>
         <fieldset>
