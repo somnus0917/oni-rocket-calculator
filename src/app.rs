@@ -1,6 +1,5 @@
 use crate::calculator::{CalculatorInput, CalculatorResult, LimitingResource, calculate};
 use crate::models::{EngineKind, OxidizerInput, OxidizerKind, RocketInput};
-use leptos::attr::value;
 use leptos::{ev::MouseEvent, prelude::*};
 #[component]
 pub fn App() -> impl IntoView {
@@ -12,7 +11,6 @@ pub fn App() -> impl IntoView {
     let engine_name = move || engine.get().spec().name;
     let requires_oxidizer = move || engine.get().spec().requires_oxidizer;
     let result = RwSignal::new(None::<CalculatorResult>);
-    let result_mes = RwSignal::new("".to_string());
     let limiting_resource_name = |resource: &LimitingResource| match resource {
         LimitingResource::Balance => "燃料和氧化剂平衡",
         LimitingResource::Fuel => "燃料",
@@ -67,6 +65,28 @@ pub fn App() -> impl IntoView {
             bind:value=fuel_amount
         />
         </label>
+        <EngineSelector engine=engine/>
+        <Show when=requires_oxidizer>
+            <OxidizerSelector oxidizer=oxidizer oxidizer_amount=oxidizer_amount/>
+        </Show>
+        <p>"你选择的引擎是" {engine_name} "."</p>
+        <p>"燃料量是: " {fuel_amount}</p>
+        <p>"是否需要氧化剂: " {requires_oxidizer}</p>
+
+        <Show when=requires_oxidizer>
+        <p>"你选择的氧化剂是" {oxidizer_name} "."</p>
+        <p>"氧化剂量是: " {oxidizer_amount}</p>
+        </Show>
+        <button on:click=on_calculate>
+            "计算"
+        </button>
+        <ResultDisplay result=result.read_only()/>
+    }
+}
+
+#[component]
+fn EngineSelector(engine: RwSignal<EngineKind>) -> impl IntoView {
+    view! {
         <fieldset>
             <legend>"火箭选择"</legend>
             {
@@ -90,7 +110,15 @@ pub fn App() -> impl IntoView {
                 }).collect_view()
             }
         </fieldset>
-        <Show when=requires_oxidizer>
+    }
+}
+
+#[component]
+fn OxidizerSelector(
+    oxidizer: RwSignal<OxidizerKind>,
+    oxidizer_amount: RwSignal<String>,
+) -> impl IntoView {
+    view! {
         <fieldset>
             <legend>"氧化剂"</legend>
             {
@@ -120,27 +148,21 @@ pub fn App() -> impl IntoView {
                 />
             </label>
         </fieldset>
-        </Show>
-        <p>"你选择的引擎是" {engine_name} "."</p>
-        <p>"燃料量是: " {fuel_amount}</p>
-        <p>"是否需要氧化剂: " {requires_oxidizer}</p>
+    }
+}
 
-        <Show when=requires_oxidizer>
-        <p>"你选择的氧化剂是" {oxidizer_name} "."</p>
-        <p>"氧化剂量是: " {oxidizer_amount}</p>
-        </Show>
-        <button on:click=on_calculate>
-            "计算"
-        </button>
-        <Show
-            when=move||result.get().is_some()
-            fallback=||()
-        >
-            {move || {
-                let value =result.get().unwrap();
-                format!("理论航程: {:.2}，完整航程: {}，限制资源: {:?}",
-                    value.exact_range,value.complete_range,value.restrict)
-            }}
-        </Show>
+#[component]
+fn ResultDisplay(result: ReadSignal<Option<CalculatorResult>>) -> impl IntoView {
+    view! {
+        {move || {
+            result.get().map(|value| {
+                format!(
+                    "理论航程: {:.2}，完整航程: {}，限制资源: {:?}",
+                    value.exact_range,
+                    value.complete_range,
+                    value.restrict
+                )
+            })
+        }}
     }
 }
