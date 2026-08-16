@@ -1,6 +1,6 @@
-use std::fmt::format;
-
-use crate::calculator::{CalculatorInput, CalculatorResult, LimitingResource, calculate};
+use crate::calculator::{
+    CalculatorError, CalculatorInput, CalculatorResult, LimitingResource, calculate,
+};
 use crate::models::{EngineKind, OxidizerInput, OxidizerKind, RocketInput};
 use leptos::{ev::MouseEvent, prelude::*};
 #[component]
@@ -13,6 +13,16 @@ pub fn App() -> impl IntoView {
     let engine_name = move || engine.get().spec().name;
     let requires_oxidizer = move || engine.get().spec().requires_oxidizer;
     let result_text = RwSignal::new("".to_string());
+    let limiting_resource_name = |resource: &LimitingResource| match resource {
+        LimitingResource::Balance => "燃料和氧化剂平衡",
+        LimitingResource::Fuel => "燃料",
+        LimitingResource::Oxidizer => "氧化剂",
+    };
+    let calculator_error_name = |error: &CalculatorError| match error {
+        CalculatorError::MissingOxidizer => "当前引擎需要氧化剂",
+        CalculatorError::NegativeFuel => "燃料量不能为负",
+        CalculatorError::NegativeOxidizer => "氧化剂量不能为负",
+    };
     let on_calculate = move |_: MouseEvent| {
         match fuel_amount.get().parse::<f32>() {
             Ok(value) => {
@@ -24,7 +34,7 @@ pub fn App() -> impl IntoView {
                             oxidizer_amount: amount,
                         }),
                         Err(_) => {
-                            leptos::logging::log!("氧化剂量输入错误");
+                            result_text.set("氧化剂输入错误".to_string());
                             return;
                         }
                     }
@@ -42,15 +52,16 @@ pub fn App() -> impl IntoView {
 
                 match result {
                     Ok(result) => {
+                        let restrict_name = limiting_resource_name(&result.restrict);
                         leptos::logging::log!(
                             "理论航程: {}, 完整航程: {}, 限制资源: {:?}",
                             result.exact_range,
                             result.complete_range,
-                            result.restrict
+                            restrict_name
                         );
                         result_text.set(format!(
                             "理论航程: {:.2}，完整航程: {}，限制资源: {:?}",
-                            result.exact_range, result.complete_range, result.restrict
+                            result.exact_range, result.complete_range, restrict_name
                         ));
                     }
 
@@ -60,7 +71,10 @@ pub fn App() -> impl IntoView {
                     }
                 }
             }
-            Err(_) => leptos::logging::log!("燃料量输入错误"),
+            Err(_) => {
+                result_text.set("氧化剂量输入错误".to_string());
+                return;
+            }
         };
     };
 
