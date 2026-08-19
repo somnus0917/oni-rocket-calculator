@@ -31,7 +31,7 @@ impl EngineKind {
                 id: "SteamEngine",
                 name: "蒸汽引擎",
                 fuel_name: "蒸汽",
-                fuel_per_hex: 20.0,
+                fuel_per_hex: 15.0,
                 requires_oxidizer: false, // 蒸汽引擎不需要氧化剂
             },
             EngineKind::Petroleum => EngineSpec {
