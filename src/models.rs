@@ -6,6 +6,7 @@ pub struct EngineSpec {
     pub fuel_per_hex: f32,
 
     pub fuel_storage: FuelStorage,
+
     pub requires_oxidizer: bool,
 }
 

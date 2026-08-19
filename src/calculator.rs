@@ -19,6 +19,7 @@ pub enum CalculatorError {
     NegativeFuel,
     MissingOxidizer,
     NegativeOxidizer,
+    FuelExceedsCapacity,
 }
 pub fn calculate(input: CalculatorInput) -> Result<CalculatorResult, CalculatorError> {
     let rocket = input.rocket;
@@ -26,6 +27,14 @@ pub fn calculate(input: CalculatorInput) -> Result<CalculatorResult, CalculatorE
     let fuel = rocket.fuel_amount;
     if fuel < 0.0 {
         return Err(CalculatorError::NegativeFuel);
+    }
+    match engine.fuel_storage {
+        FuelStorage::Internal { capacity } => {
+            if fuel > capacity {
+                return Err(CalculatorError::FuelExceedsCapacity);
+            }
+        }
+        FuelStorage::ExternalTank => (),
     }
     let fuel_per_hex = engine.fuel_per_hex;
     let (exact_range, restrict) = if engine.requires_oxidizer {
@@ -120,15 +129,15 @@ mod tests {
         let input = CalculatorInput {
             rocket: RocketInput {
                 engine: EngineKind::Steam,
-                fuel_amount: 500.0,
+                fuel_amount: 150.0,
                 oxidizer_input: None, // 不需要氧化剂
             },
         };
         let output = calculate(input).unwrap();
         let expected = CalculatorResult {
             restrict: LimitingResource::Fuel,
-            exact_range: 25.0,
-            complete_range: 25,
+            exact_range: 10.0,
+            complete_range: 10,
         };
         assert_eq!(expected.restrict, output.restrict);
         assert_eq!(expected.complete_range, output.complete_range);
@@ -160,5 +169,18 @@ mod tests {
         };
         let output = calculate(input);
         assert_eq!(output, Err(CalculatorError::NegativeFuel));
+    }
+
+    #[test]
+    fn steam_fuel_exceeds_capacity() {
+        let input = CalculatorInput {
+            rocket: RocketInput {
+                engine: EngineKind::Steam,
+                fuel_amount: 151.0,
+                oxidizer_input: None,
+            },
+        };
+        let output = calculate(input);
+        assert_eq!(output, Err(CalculatorError::FuelExceedsCapacity))
     }
 }
