@@ -4,8 +4,17 @@ pub struct EngineSpec {
     pub name: &'static str,
     pub fuel_name: &'static str,
     pub fuel_per_hex: f32,
+
+    pub fuel_storage: FuelStorage,
     pub requires_oxidizer: bool,
 }
+
+#[derive(Debug, Clone, Copy)]
+pub enum FuelStorage {
+    Internal { capacity: f32 },
+    ExternalTank,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum EngineKind {
     Hydrogen,
@@ -25,6 +34,7 @@ impl EngineKind {
                 name: "液氢引擎",
                 fuel_name: "液氢",
                 fuel_per_hex: 56.25,
+                fuel_storage: FuelStorage::ExternalTank,
                 requires_oxidizer: true,
             },
             EngineKind::Steam => EngineSpec {
@@ -32,6 +42,7 @@ impl EngineKind {
                 name: "蒸汽引擎",
                 fuel_name: "蒸汽",
                 fuel_per_hex: 15.0,
+                fuel_storage: FuelStorage::Internal { capacity: 150.0 },
                 requires_oxidizer: false, // 蒸汽引擎不需要氧化剂
             },
             EngineKind::Petroleum => EngineSpec {
@@ -39,6 +50,7 @@ impl EngineKind {
                 name: "石油引擎",
                 fuel_name: "石油",
                 fuel_per_hex: 90.0,
+                fuel_storage: FuelStorage::ExternalTank,
                 requires_oxidizer: true,
             },
         }
