@@ -1,7 +1,5 @@
 use crate::calculator::{CalculatorInput, CalculatorResult, LimitingResource, calculate};
-use crate::models::{
-    EngineKind, FuelTankKind, FuelTankSpec, OxidizerInput, OxidizerKind, RocketInput,
-};
+use crate::models::{EngineKind, FuelTankKind, OxidizerInput, OxidizerKind, RocketInput};
 use leptos::{ev::MouseEvent, prelude::*};
 #[component]
 pub fn App() -> impl IntoView {

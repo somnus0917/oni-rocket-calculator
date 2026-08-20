@@ -105,7 +105,7 @@ mod tests {
         let input = CalculatorInput {
             rocket: RocketInput {
                 engine: EngineKind::Hydrogen,
-                fuel_amount: 900.0,
+                fuel_amount: 800.0,
                 oxidizer_input: Some(OxidizerInput {
                     oxidizer: OxidizerKind::LiquidOxygen, // 效率 4.0
                     oxidizer_amount: 200.0,               // 实际可用 800.0
@@ -198,5 +198,46 @@ mod tests {
         };
         let output = calculate(input);
         assert_eq!(output, Err(CalculatorError::FuelExceedsCapacity))
+    }
+
+    #[test]
+    fn external_tank_fuel_exceeds_capacity() {
+        let input = CalculatorInput {
+            rocket: RocketInput {
+                engine: EngineKind::Hydrogen,
+                fuel_amount: 901.0,
+                fuel_tanks: vec![FuelTankKind::LargeLiquid],
+                oxidizer_input: Some(OxidizerInput {
+                    oxidizer: OxidizerKind::LiquidOxygen,
+                    oxidizer_amount: 400.0,
+                }),
+            },
+        };
+        let output = calculate(input);
+        assert_eq!(output, Err(CalculatorError::FuelExceedsCapacity));
+    }
+
+    #[test]
+    fn multiple_external_tanks_capacity() {
+        let input = CalculatorInput {
+            rocket: RocketInput {
+                engine: EngineKind::Hydrogen,
+                fuel_amount: 1800.0,
+                fuel_tanks: vec![FuelTankKind::LargeLiquid, FuelTankKind::LargeLiquid],
+                oxidizer_input: Some(OxidizerInput {
+                    oxidizer: OxidizerKind::LiquidOxygen,
+                    oxidizer_amount: 450.0,
+                }),
+            },
+        };
+        let output = calculate(input);
+        assert_eq!(
+            output.unwrap(),
+            CalculatorResult {
+                restrict: LimitingResource::Balance,
+                exact_range: 32.0,
+                complete_range: 32
+            }
+        );
     }
 }
