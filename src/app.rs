@@ -1,5 +1,7 @@
 use crate::calculator::{CalculatorInput, CalculatorResult, LimitingResource, calculate};
-use crate::models::{EngineKind, OxidizerInput, OxidizerKind, RocketInput};
+use crate::models::{
+    EngineKind, FuelTankKind, FuelTankSpec, OxidizerInput, OxidizerKind, RocketInput,
+};
 use leptos::{ev::MouseEvent, prelude::*};
 #[component]
 pub fn App() -> impl IntoView {
@@ -9,6 +11,7 @@ pub fn App() -> impl IntoView {
     let oxidizer_name = move || oxidizer.get().spec().name;
     let engine = RwSignal::new(EngineKind::Steam);
     let engine_name = move || engine.get().spec().name;
+    let fuel_tanks = FuelTankKind::LargeLiquid;
     let requires_oxidizer = move || engine.get().spec().requires_oxidizer;
     let result = RwSignal::new(None::<CalculatorResult>);
     let limiting_resource_name = |resource: &LimitingResource| match resource {
@@ -37,6 +40,7 @@ pub fn App() -> impl IntoView {
                     engine: current_engine,
                     fuel_amount: value,
                     oxidizer_input: oxidizer_input,
+                    fuel_tanks: vec![fuel_tanks],
                 };
                 leptos::logging::log!("燃料量: {}", value);
                 let input = CalculatorInput { rocket };

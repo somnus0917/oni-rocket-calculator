@@ -16,6 +16,34 @@ pub enum FuelStorage {
     ExternalTank,
 }
 
+#[derive(Debug, Clone, Copy)]
+pub enum FuelTankKind {
+    LargeLiquid,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct FuelTankSpec {
+    pub id: &'static str,
+    pub name: &'static str,
+    pub capacity: f32,
+    pub burden: u32,
+    pub height: u32,
+}
+
+impl FuelTankKind {
+    pub fn spec(self) -> FuelTankSpec {
+        match self {
+            FuelTankKind::LargeLiquid => FuelTankSpec {
+                id: "LargeLiquidFuelTank",
+                name: "大型液体燃料舱",
+                capacity: 900.0,
+                burden: 5,
+                height: 5,
+            },
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum EngineKind {
     Hydrogen,
@@ -103,5 +131,6 @@ pub struct OxidizerInput {
 pub struct RocketInput {
     pub engine: EngineKind,
     pub fuel_amount: f32,
+    pub fuel_tanks: Vec<FuelTankKind>,
     pub oxidizer_input: Option<OxidizerInput>,
 }

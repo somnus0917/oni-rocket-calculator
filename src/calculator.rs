@@ -34,7 +34,16 @@ pub fn calculate(input: CalculatorInput) -> Result<CalculatorResult, CalculatorE
                 return Err(CalculatorError::FuelExceedsCapacity);
             }
         }
-        FuelStorage::ExternalTank => (),
+        FuelStorage::ExternalTank => {
+            let total_capacity: f32 = rocket
+                .fuel_tanks
+                .iter()
+                .map(|tank| tank.spec().capacity)
+                .sum();
+            if total_capacity < fuel {
+                return Err(CalculatorError::FuelExceedsCapacity);
+            }
+        }
     }
     let fuel_per_hex = engine.fuel_per_hex;
     let (exact_range, restrict) = if engine.requires_oxidizer {
@@ -72,11 +81,12 @@ mod tests {
         let input = CalculatorInput {
             rocket: RocketInput {
                 engine: EngineKind::Hydrogen,
-                fuel_amount: 1000.0,
+                fuel_amount: 900.0,
                 oxidizer_input: Some(OxidizerInput {
                     oxidizer: OxidizerKind::OxyRock, // 效率 2.0
                     oxidizer_amount: 400.0,          // 实际可用 800.0
                 }),
+                fuel_tanks: vec![FuelTankKind::LargeLiquid],
             },
         };
         let output = calculate(input).unwrap();
@@ -95,11 +105,12 @@ mod tests {
         let input = CalculatorInput {
             rocket: RocketInput {
                 engine: EngineKind::Hydrogen,
-                fuel_amount: 800.0,
+                fuel_amount: 900.0,
                 oxidizer_input: Some(OxidizerInput {
                     oxidizer: OxidizerKind::LiquidOxygen, // 效率 4.0
                     oxidizer_amount: 200.0,               // 实际可用 800.0
                 }),
+                fuel_tanks: vec![FuelTankKind::LargeLiquid],
             },
         };
         let output = calculate(input).unwrap();
@@ -119,6 +130,7 @@ mod tests {
                 engine: EngineKind::Hydrogen,
                 fuel_amount: 900.0,
                 oxidizer_input: None, // 没带氧化剂！
+                fuel_tanks: vec![FuelTankKind::LargeLiquid],
             },
         };
         let output = calculate(input);
@@ -131,6 +143,7 @@ mod tests {
                 engine: EngineKind::Steam,
                 fuel_amount: 150.0,
                 oxidizer_input: None, // 不需要氧化剂
+                fuel_tanks: vec![],
             },
         };
         let output = calculate(input).unwrap();
@@ -148,11 +161,12 @@ mod tests {
         let input = CalculatorInput {
             rocket: RocketInput {
                 engine: EngineKind::Hydrogen,
-                fuel_amount: 500.0,
+                fuel_amount: 900.0,
                 oxidizer_input: Some(OxidizerInput {
                     oxidizer: OxidizerKind::OxyRock,
                     oxidizer_amount: -200.0,
                 }),
+                fuel_tanks: vec![FuelTankKind::LargeLiquid],
             },
         };
         let output = calculate(input);
@@ -165,6 +179,7 @@ mod tests {
                 engine: EngineKind::Steam,
                 fuel_amount: -200.0,
                 oxidizer_input: None,
+                fuel_tanks: vec![],
             },
         };
         let output = calculate(input);
@@ -178,6 +193,7 @@ mod tests {
                 engine: EngineKind::Steam,
                 fuel_amount: 151.0,
                 oxidizer_input: None,
+                fuel_tanks: vec![],
             },
         };
         let output = calculate(input);
