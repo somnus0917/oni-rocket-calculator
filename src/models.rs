@@ -210,3 +210,18 @@ pub enum RocketModule {
     FuelTank(FuelTankKind),
     OxidizerTank(OxidizerTankKind),
 }
+
+impl RocketModule {
+    pub fn height(self) -> u32 {
+        match self {
+            RocketModule::FuelTank(tank) => tank.spec().height,
+            RocketModule::OxidizerTank(tank) => tank.spec().height,
+        }
+    }
+    pub fn burden(self) -> u32 {
+        match self {
+            RocketModule::FuelTank(tank) => tank.spec().burden,
+            RocketModule::OxidizerTank(tank) => tank.spec().burden,
+        }
+    }
+}

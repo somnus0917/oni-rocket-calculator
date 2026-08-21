@@ -28,7 +28,7 @@ pub fn App() -> impl IntoView {
 
                 // 燃料舱
                 match current_engine.spec().fuel_storage {
-                    FuelStorage::Internal { capacity } => {}
+                    FuelStorage::Internal { .. } => {}
                     FuelStorage::ExternalTank => {
                         modules.push(RocketModule::FuelTank(FuelTankKind::LargeLiquid));
                     }

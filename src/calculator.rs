@@ -352,4 +352,32 @@ mod tests {
         let output = calculate(input);
         assert_eq!(output, Err(CalculatorError::OxidizerExceedsCapacity))
     }
+
+    #[test]
+    fn module_height() {
+        let modules = [
+            (RocketModule::FuelTank(FuelTankKind::LargeLiquid), 5),
+            (RocketModule::OxidizerTank(OxidizerTankKind::SmallSolid), 2),
+            (RocketModule::OxidizerTank(OxidizerTankKind::LargeSolid), 5),
+            (RocketModule::OxidizerTank(OxidizerTankKind::Liquid), 2),
+        ];
+
+        for (module, expected_height) in modules {
+            assert_eq!(module.height(), expected_height);
+        }
+    }
+
+    #[test]
+    fn module_burden() {
+        let modules = [
+            (RocketModule::FuelTank(FuelTankKind::LargeLiquid), 5),
+            (RocketModule::OxidizerTank(OxidizerTankKind::SmallSolid), 2),
+            (RocketModule::OxidizerTank(OxidizerTankKind::LargeSolid), 5),
+            (RocketModule::OxidizerTank(OxidizerTankKind::Liquid), 5),
+        ];
+
+        for (module, expected_burden) in modules {
+            assert_eq!(module.burden(), expected_burden);
+        }
+    }
 }
