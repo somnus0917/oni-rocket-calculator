@@ -104,7 +104,7 @@ mod tests {
                     oxidizer_amount: 400.0,          // 实际可用 800.0
                 }),
                 fuel_tanks: vec![FuelTankKind::LargeLiquid],
-                oxidizer_tanks: vec![OxidizerTankKind::Liquid],
+                oxidizer_tanks: vec![OxidizerTankKind::LargeSolid],
             },
         };
         let output = calculate(input).unwrap();
@@ -265,33 +265,32 @@ mod tests {
                 complete_range: 32
             }
         );
-
-        #[test]
-        fn liquidoxygenliquidtank() {
-            let input = CalculatorInput {
-                rocket: RocketInput {
-                    engine: EngineKind::Hydrogen,
-                    fuel_amount: 1800.0,
-                    fuel_tanks: vec![FuelTankKind::LargeLiquid; 2],
-                    oxidizer_input: Some(OxidizerInput {
-                        oxidizer: OxidizerKind::LiquidOxygen,
-                        oxidizer_amount: 450.0,
-                    }),
-                    oxidizer_tanks: vec![OxidizerTankKind::Liquid],
-                },
-            };
-            let output = calculate(input);
-            assert_eq!(
-                output.unwrap(),
-                CalculatorResult {
-                    restrict: LimitingResource::Balance,
-                    exact_range: 32.0,
-                    complete_range: 32
-                }
-            );
-        }
     }
 
+    #[test]
+    fn liquidoxygenliquidtank() {
+        let input = CalculatorInput {
+            rocket: RocketInput {
+                engine: EngineKind::Hydrogen,
+                fuel_amount: 1800.0,
+                fuel_tanks: vec![FuelTankKind::LargeLiquid; 2],
+                oxidizer_input: Some(OxidizerInput {
+                    oxidizer: OxidizerKind::LiquidOxygen,
+                    oxidizer_amount: 450.0,
+                }),
+                oxidizer_tanks: vec![OxidizerTankKind::Liquid],
+            },
+        };
+        let output = calculate(input);
+        assert_eq!(
+            output.unwrap(),
+            CalculatorResult {
+                restrict: LimitingResource::Balance,
+                exact_range: 32.0,
+                complete_range: 32
+            }
+        );
+    }
     #[test]
     fn incompatibleoxidizer() {
         let input = CalculatorInput {
@@ -308,5 +307,22 @@ mod tests {
         };
         let output = calculate(input);
         assert_eq!(output, Err(CalculatorError::IncompatibleOxidizerTank))
+    }
+    #[test]
+    fn oxidizerexceedscapacity() {
+        let input = CalculatorInput {
+            rocket: RocketInput {
+                engine: EngineKind::Hydrogen,
+                fuel_amount: 1800.0,
+                fuel_tanks: vec![FuelTankKind::LargeLiquid; 2],
+                oxidizer_input: Some(OxidizerInput {
+                    oxidizer: OxidizerKind::LiquidOxygen,
+                    oxidizer_amount: 451.0,
+                }),
+                oxidizer_tanks: vec![OxidizerTankKind::Liquid],
+            },
+        };
+        let output = calculate(input);
+        assert_eq!(output, Err(CalculatorError::OxidizerExceedsCapacity))
     }
 }

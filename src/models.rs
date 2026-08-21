@@ -201,7 +201,12 @@ pub struct OxidizerInput {
 pub struct RocketInput {
     pub engine: EngineKind,
     pub fuel_amount: f32,
-    pub fuel_tanks: Vec<FuelTankKind>,
     pub oxidizer_input: Option<OxidizerInput>,
-    pub oxidizer_tanks: Vec<OxidizerTankKind>,
+    pub modules: Vec<RocketModule>,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum RocketModule {
+    FuelTank(FuelTankKind),
+    OxidizerTank(OxidizerTankKind),
 }
