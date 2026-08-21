@@ -1,15 +1,4 @@
-#[derive(Debug, Clone, Copy)]
-pub struct EngineSpec {
-    pub id: &'static str,
-    pub name: &'static str,
-    pub fuel_name: &'static str,
-    pub fuel_per_hex: f32,
-
-    pub fuel_storage: FuelStorage,
-
-    pub requires_oxidizer: bool,
-}
-
+// 燃料相关
 #[derive(Debug, Clone, Copy)]
 pub enum FuelStorage {
     Internal { capacity: f32 },
@@ -42,6 +31,19 @@ impl FuelTankKind {
             },
         }
     }
+}
+
+// 引擎相关
+#[derive(Debug, Clone, Copy)]
+pub struct EngineSpec {
+    pub id: &'static str,
+    pub name: &'static str,
+    pub fuel_name: &'static str,
+    pub fuel_per_hex: f32,
+
+    pub fuel_storage: FuelStorage,
+
+    pub requires_oxidizer: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -85,18 +87,22 @@ impl EngineKind {
         }
     }
 }
+
+// 氧化剂相关
 #[derive(Debug, Clone, Copy)]
 pub struct OxidizerSpec {
     pub id: &'static str,
     pub name: &'static str,
     pub efficiency: f32,
 }
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum OxidizerKind {
     Fertilizer,
     OxyRock,
     LiquidOxygen,
 }
+
 impl OxidizerKind {
     pub const ALL: [OxidizerKind; 3] = [
         OxidizerKind::LiquidOxygen,
@@ -122,15 +128,80 @@ impl OxidizerKind {
             },
         }
     }
+    pub fn storage_kind(self) -> OxidizerStorageKind {
+        match self {
+            OxidizerKind::Fertilizer => OxidizerStorageKind::Solid,
+            OxidizerKind::OxyRock => OxidizerStorageKind::Solid,
+            OxidizerKind::LiquidOxygen => OxidizerStorageKind::Liquid,
+        }
+    }
 }
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum OxidizerStorageKind {
+    Liquid,
+    Solid,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct OxidizerTankSpec {
+    pub id: &'static str,
+    pub name: &'static str,
+    pub capacity: f32,
+    pub burden: u32,
+    pub height: u32,
+
+    pub storage_kind: OxidizerStorageKind,
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum OxidizerTankKind {
+    SmallSolid,
+    LargeSolid,
+    Liquid,
+}
+impl OxidizerTankKind {
+    pub fn spec(self) -> OxidizerTankSpec {
+        match self {
+            OxidizerTankKind::SmallSolid => OxidizerTankSpec {
+                id: "SmallSolidOxidizerTank",
+                name: "小型固体氧化剂舱",
+                capacity: 450.0,
+                burden: 2,
+                height: 2,
+                storage_kind: OxidizerStorageKind::Solid,
+            },
+            OxidizerTankKind::LargeSolid => OxidizerTankSpec {
+                id: "LargeSolidOxidizerTank",
+                name: "大型固体氧化剂舱",
+                capacity: 900.0,
+                burden: 5,
+                height: 5,
+                storage_kind: OxidizerStorageKind::Solid,
+            },
+
+            OxidizerTankKind::Liquid => OxidizerTankSpec {
+                id: "LiquidOxidizerTank",
+                name: "液体氧化剂舱",
+                capacity: 450.0,
+                burden: 5,
+                height: 2,
+                storage_kind: OxidizerStorageKind::Liquid,
+            },
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 pub struct OxidizerInput {
     pub oxidizer: OxidizerKind,
     pub oxidizer_amount: f32,
 }
+
+//火箭相关
 pub struct RocketInput {
     pub engine: EngineKind,
     pub fuel_amount: f32,
     pub fuel_tanks: Vec<FuelTankKind>,
     pub oxidizer_input: Option<OxidizerInput>,
+    pub oxidizer_tanks: Vec<OxidizerTankKind>,
 }
