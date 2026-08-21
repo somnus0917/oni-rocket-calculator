@@ -44,6 +44,9 @@ pub struct EngineSpec {
     pub fuel_storage: FuelStorage,
 
     pub requires_oxidizer: bool,
+
+    pub height: u32,
+    pub max_rocket_height: u32,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -67,6 +70,8 @@ impl EngineKind {
                 fuel_per_hex: 56.25,
                 fuel_storage: FuelStorage::ExternalTank,
                 requires_oxidizer: true,
+                height: 5,
+                max_rocket_height: 35,
             },
             EngineKind::Steam => EngineSpec {
                 id: "SteamEngine",
@@ -75,6 +80,8 @@ impl EngineKind {
                 fuel_per_hex: 15.0,
                 fuel_storage: FuelStorage::Internal { capacity: 150.0 },
                 requires_oxidizer: false, // 蒸汽引擎不需要氧化剂
+                height: 5,
+                max_rocket_height: 25,
             },
             EngineKind::Petroleum => EngineSpec {
                 id: "PetroleumEngine",
@@ -83,6 +90,8 @@ impl EngineKind {
                 fuel_per_hex: 90.0,
                 fuel_storage: FuelStorage::ExternalTank,
                 requires_oxidizer: true,
+                height: 5,
+                max_rocket_height: 35,
             },
         }
     }

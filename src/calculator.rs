@@ -22,6 +22,7 @@ pub enum CalculatorError {
     FuelExceedsCapacity,
     OxidizerExceedsCapacity,
     IncompatibleOxidizerTank,
+    RocketExceedsMaxHeight,
 }
 pub fn calculate(input: CalculatorInput) -> Result<CalculatorResult, CalculatorError> {
     let rocket = input.rocket;
@@ -29,6 +30,11 @@ pub fn calculate(input: CalculatorInput) -> Result<CalculatorResult, CalculatorE
     let fuel = rocket.fuel_amount;
     if fuel < 0.0 {
         return Err(CalculatorError::NegativeFuel);
+    }
+    let module_height: u32 = rocket.modules.iter().map(|module| module.height()).sum();
+    let total_height = engine.height + module_height;
+    if total_height > engine.max_rocket_height {
+        return Err(CalculatorError::RocketExceedsMaxHeight);
     }
     match engine.fuel_storage {
         FuelStorage::Internal { capacity } => {
@@ -378,6 +384,21 @@ mod tests {
 
         for (module, expected_burden) in modules {
             assert_eq!(module.burden(), expected_burden);
+        }
+    }
+    #[test]
+    fn engine_height_limits() {
+        let engines = [
+            (EngineKind::Steam, 5, 25),
+            (EngineKind::Petroleum, 5, 35),
+            (EngineKind::Hydrogen, 5, 35),
+        ];
+
+        for (engine, expected_height, expected_max_height) in engines {
+            let spec = engine.spec();
+
+            assert_eq!(spec.height, expected_height);
+            assert_eq!(spec.max_rocket_height, expected_max_height);
         }
     }
 }
