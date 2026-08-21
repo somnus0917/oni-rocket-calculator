@@ -38,8 +38,12 @@ pub fn calculate(input: CalculatorInput) -> Result<CalculatorResult, CalculatorE
         }
         FuelStorage::ExternalTank => {
             let total_capacity: f32 = rocket
-                .fuel_tanks
+                .modules
                 .iter()
+                .filter_map(|module| match module {
+                    RocketModule::FuelTank(tank) => Some(*tank),
+                    _ => None,
+                })
                 .map(|tank| tank.spec().capacity)
                 .sum();
             if total_capacity < fuel {
@@ -56,15 +60,23 @@ pub fn calculate(input: CalculatorInput) -> Result<CalculatorResult, CalculatorE
             return Err(CalculatorError::NegativeOxidizer);
         }
         let compatible = rocket
-            .oxidizer_tanks
+            .modules
             .iter()
+            .filter_map(|module| match module {
+                RocketModule::OxidizerTank(tank) => Some(*tank),
+                _ => None,
+            })
             .all(|tank| tank.spec().storage_kind == oxi.oxidizer.storage_kind());
         if !compatible {
             return Err(CalculatorError::IncompatibleOxidizerTank);
         }
         let total_oxidizer_capacity: f32 = rocket
-            .oxidizer_tanks
+            .modules
             .iter()
+            .filter_map(|module| match module {
+                RocketModule::OxidizerTank(tank) => Some(*tank),
+                _ => None,
+            })
             .map(|tank| tank.spec().capacity)
             .sum();
         if oxi.oxidizer_amount > total_oxidizer_capacity {
@@ -103,8 +115,10 @@ mod tests {
                     oxidizer: OxidizerKind::OxyRock, // 效率 2.0
                     oxidizer_amount: 400.0,          // 实际可用 800.0
                 }),
-                fuel_tanks: vec![FuelTankKind::LargeLiquid],
-                oxidizer_tanks: vec![OxidizerTankKind::LargeSolid],
+                modules: vec![
+                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
+                    RocketModule::OxidizerTank(OxidizerTankKind::LargeSolid),
+                ],
             },
         };
         let output = calculate(input).unwrap();
@@ -128,8 +142,10 @@ mod tests {
                     oxidizer: OxidizerKind::LiquidOxygen, // 效率 4.0
                     oxidizer_amount: 200.0,               // 实际可用 800.0
                 }),
-                fuel_tanks: vec![FuelTankKind::LargeLiquid],
-                oxidizer_tanks: vec![OxidizerTankKind::Liquid],
+                modules: vec![
+                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
+                    RocketModule::OxidizerTank(OxidizerTankKind::Liquid),
+                ],
             },
         };
         let output = calculate(input).unwrap();
@@ -149,8 +165,7 @@ mod tests {
                 engine: EngineKind::Hydrogen,
                 fuel_amount: 900.0,
                 oxidizer_input: None, // 没带氧化剂！
-                fuel_tanks: vec![FuelTankKind::LargeLiquid],
-                oxidizer_tanks: vec![],
+                modules: vec![RocketModule::FuelTank(FuelTankKind::LargeLiquid)],
             },
         };
         let output = calculate(input);
@@ -163,8 +178,7 @@ mod tests {
                 engine: EngineKind::Steam,
                 fuel_amount: 150.0,
                 oxidizer_input: None, // 不需要氧化剂
-                fuel_tanks: vec![],
-                oxidizer_tanks: vec![],
+                modules: vec![],
             },
         };
         let output = calculate(input).unwrap();
@@ -187,8 +201,10 @@ mod tests {
                     oxidizer: OxidizerKind::OxyRock,
                     oxidizer_amount: -200.0,
                 }),
-                fuel_tanks: vec![FuelTankKind::LargeLiquid],
-                oxidizer_tanks: vec![OxidizerTankKind::LargeSolid],
+                modules: vec![
+                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
+                    RocketModule::OxidizerTank(OxidizerTankKind::LargeSolid),
+                ],
             },
         };
         let output = calculate(input);
@@ -201,8 +217,7 @@ mod tests {
                 engine: EngineKind::Steam,
                 fuel_amount: -200.0,
                 oxidizer_input: None,
-                fuel_tanks: vec![],
-                oxidizer_tanks: vec![],
+                modules: vec![],
             },
         };
         let output = calculate(input);
@@ -216,8 +231,7 @@ mod tests {
                 engine: EngineKind::Steam,
                 fuel_amount: 151.0,
                 oxidizer_input: None,
-                fuel_tanks: vec![],
-                oxidizer_tanks: vec![],
+                modules: vec![],
             },
         };
         let output = calculate(input);
@@ -230,12 +244,14 @@ mod tests {
             rocket: RocketInput {
                 engine: EngineKind::Hydrogen,
                 fuel_amount: 901.0,
-                fuel_tanks: vec![FuelTankKind::LargeLiquid],
                 oxidizer_input: Some(OxidizerInput {
                     oxidizer: OxidizerKind::LiquidOxygen,
                     oxidizer_amount: 400.0,
                 }),
-                oxidizer_tanks: vec![OxidizerTankKind::LargeSolid],
+                modules: vec![
+                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
+                    RocketModule::OxidizerTank(OxidizerTankKind::LargeSolid),
+                ],
             },
         };
         let output = calculate(input);
@@ -248,12 +264,15 @@ mod tests {
             rocket: RocketInput {
                 engine: EngineKind::Hydrogen,
                 fuel_amount: 1800.0,
-                fuel_tanks: vec![FuelTankKind::LargeLiquid, FuelTankKind::LargeLiquid],
                 oxidizer_input: Some(OxidizerInput {
                     oxidizer: OxidizerKind::LiquidOxygen,
                     oxidizer_amount: 450.0,
                 }),
-                oxidizer_tanks: vec![OxidizerTankKind::Liquid],
+                modules: vec![
+                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
+                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
+                    RocketModule::OxidizerTank(OxidizerTankKind::Liquid),
+                ],
             },
         };
         let output = calculate(input);
@@ -273,12 +292,15 @@ mod tests {
             rocket: RocketInput {
                 engine: EngineKind::Hydrogen,
                 fuel_amount: 1800.0,
-                fuel_tanks: vec![FuelTankKind::LargeLiquid; 2],
                 oxidizer_input: Some(OxidizerInput {
                     oxidizer: OxidizerKind::LiquidOxygen,
                     oxidizer_amount: 450.0,
                 }),
-                oxidizer_tanks: vec![OxidizerTankKind::Liquid],
+                modules: vec![
+                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
+                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
+                    RocketModule::OxidizerTank(OxidizerTankKind::Liquid),
+                ],
             },
         };
         let output = calculate(input);
@@ -297,12 +319,14 @@ mod tests {
             rocket: RocketInput {
                 engine: EngineKind::Hydrogen,
                 fuel_amount: 800.0,
-                fuel_tanks: vec![FuelTankKind::LargeLiquid],
                 oxidizer_input: Some(OxidizerInput {
                     oxidizer_amount: 200.0,
                     oxidizer: OxidizerKind::LiquidOxygen,
                 }),
-                oxidizer_tanks: vec![OxidizerTankKind::LargeSolid],
+                modules: vec![
+                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
+                    RocketModule::OxidizerTank(OxidizerTankKind::LargeSolid),
+                ],
             },
         };
         let output = calculate(input);
@@ -314,12 +338,15 @@ mod tests {
             rocket: RocketInput {
                 engine: EngineKind::Hydrogen,
                 fuel_amount: 1800.0,
-                fuel_tanks: vec![FuelTankKind::LargeLiquid; 2],
                 oxidizer_input: Some(OxidizerInput {
                     oxidizer: OxidizerKind::LiquidOxygen,
                     oxidizer_amount: 451.0,
                 }),
-                oxidizer_tanks: vec![OxidizerTankKind::Liquid],
+                modules: vec![
+                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
+                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
+                    RocketModule::OxidizerTank(OxidizerTankKind::Liquid),
+                ],
             },
         };
         let output = calculate(input);

@@ -1,7 +1,7 @@
 use crate::calculator::{CalculatorInput, CalculatorResult, LimitingResource, calculate};
 use crate::models::{
-    EngineKind, FuelTankKind, OxidizerInput, OxidizerKind, OxidizerStorageKind, OxidizerTankKind,
-    RocketInput,
+    EngineKind, FuelStorage, FuelTankKind, OxidizerInput, OxidizerKind, OxidizerStorageKind,
+    OxidizerTankKind, RocketInput, RocketModule,
 };
 use leptos::{ev::MouseEvent, prelude::*};
 #[component]
@@ -12,12 +12,6 @@ pub fn App() -> impl IntoView {
     let oxidizer_name = move || oxidizer.get().spec().name;
     let engine = RwSignal::new(EngineKind::Steam);
     let engine_name = move || engine.get().spec().name;
-    let current_oxidizer = oxidizer.get();
-    let fuel_tanks = FuelTankKind::LargeLiquid;
-    let oxidizer_tank = match current_oxidizer.storage_kind() {
-        OxidizerStorageKind::Liquid => OxidizerTankKind::Liquid,
-        OxidizerStorageKind::Solid => OxidizerTankKind::LargeSolid,
-    };
     let requires_oxidizer = move || engine.get().spec().requires_oxidizer;
     let result = RwSignal::new(None::<CalculatorResult>);
     let limiting_resource_name = |resource: &LimitingResource| match resource {
@@ -29,12 +23,31 @@ pub fn App() -> impl IntoView {
         match fuel_amount.get().parse::<f32>() {
             Ok(value) => {
                 let current_engine = engine.get();
+                let current_oxidizer = oxidizer.get();
+                let mut modules = Vec::new();
+
+                // 燃料舱
+                match current_engine.spec().fuel_storage {
+                    FuelStorage::Internal { capacity } => {}
+                    FuelStorage::ExternalTank => {
+                        modules.push(RocketModule::FuelTank(FuelTankKind::LargeLiquid));
+                    }
+                }
+
+                // 氧化剂舱
                 let oxidizer_input = if current_engine.spec().requires_oxidizer {
                     match oxidizer_amount.get().parse::<f32>() {
-                        Ok(amount) => Some(OxidizerInput {
-                            oxidizer: oxidizer.get(),
-                            oxidizer_amount: amount,
-                        }),
+                        Ok(amount) => {
+                            let oxidizer_tank = match current_oxidizer.storage_kind() {
+                                OxidizerStorageKind::Liquid => OxidizerTankKind::Liquid,
+                                OxidizerStorageKind::Solid => OxidizerTankKind::LargeSolid,
+                            };
+                            modules.push(RocketModule::OxidizerTank(oxidizer_tank));
+                            Some(OxidizerInput {
+                                oxidizer: current_oxidizer,
+                                oxidizer_amount: amount,
+                            })
+                        }
                         Err(_) => {
                             return;
                         }
@@ -42,12 +55,13 @@ pub fn App() -> impl IntoView {
                 } else {
                     None
                 };
+
+                // 火箭本体
                 let rocket = RocketInput {
                     engine: current_engine,
                     fuel_amount: value,
-                    oxidizer_input: oxidizer_input,
-                    fuel_tanks: vec![fuel_tanks],
-                    oxidizer_tanks: vec![oxidizer_tank],
+                    oxidizer_input,
+                    modules,
                 };
                 leptos::logging::log!("燃料量: {}", value);
                 let input = CalculatorInput { rocket };
