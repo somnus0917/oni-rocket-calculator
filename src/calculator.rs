@@ -13,6 +13,7 @@ pub struct CalculatorResult {
     pub restrict: LimitingResource,
     pub exact_range: f32,
     pub complete_range: u32,
+    pub speed: f32,
 }
 #[derive(Debug, PartialEq)]
 pub enum CalculatorError {
@@ -36,6 +37,10 @@ pub fn calculate(input: CalculatorInput) -> Result<CalculatorResult, CalculatorE
     if total_height > engine.max_rocket_height {
         return Err(CalculatorError::RocketExceedsMaxHeight);
     }
+
+    let module_burden: u32 = rocket.modules.iter().map(|module| module.burden()).sum();
+    let total_burden = engine.burden + module_burden;
+    let speed = engine.engine_power as f32 / total_burden as f32;
     match engine.fuel_storage {
         FuelStorage::Internal { capacity } => {
             if fuel > capacity {
@@ -103,6 +108,7 @@ pub fn calculate(input: CalculatorInput) -> Result<CalculatorResult, CalculatorE
         restrict,
         exact_range,
         complete_range: exact_range.floor() as u32,
+        speed,
     })
 }
 
@@ -132,10 +138,12 @@ mod tests {
             restrict: LimitingResource::Oxidizer,
             exact_range: 14.222222,
             complete_range: 14,
+            speed: 55.0 / 17.0,
         };
         assert_eq!(expected.restrict, output.restrict);
         assert_eq!(expected.complete_range, output.complete_range);
-        assert!((output.exact_range - expected.exact_range).abs() < 1e-5)
+        assert!((output.exact_range - expected.exact_range).abs() < 1e-5);
+        assert!((output.speed - expected.speed).abs() < 1e-5)
     }
 
     #[test]
@@ -159,10 +167,12 @@ mod tests {
             restrict: LimitingResource::Balance,
             exact_range: 14.222222,
             complete_range: 14,
+            speed: 55.0 / 17.0,
         };
         assert_eq!(expected.restrict, output.restrict);
         assert_eq!(expected.complete_range, output.complete_range);
-        assert!((output.exact_range - expected.exact_range).abs() < 1e-5)
+        assert!((output.exact_range - expected.exact_range).abs() < 1e-5);
+        assert!((output.speed - expected.speed).abs() < 1e-5)
     }
     #[test]
     fn no_oxidizer_hydrogen() {
@@ -192,10 +202,12 @@ mod tests {
             restrict: LimitingResource::Fuel,
             exact_range: 10.0,
             complete_range: 10,
+            speed: 27.0 / 15.0,
         };
         assert_eq!(expected.restrict, output.restrict);
         assert_eq!(expected.complete_range, output.complete_range);
-        assert!((output.exact_range - expected.exact_range).abs() < 1e-5)
+        assert!((output.exact_range - expected.exact_range).abs() < 1e-5);
+        assert!((output.speed - expected.speed).abs() < 1e-5)
     }
     #[test]
     fn negative_oxizidizer() {
@@ -287,7 +299,8 @@ mod tests {
             CalculatorResult {
                 restrict: LimitingResource::Balance,
                 exact_range: 32.0,
-                complete_range: 32
+                complete_range: 32,
+                speed: 2.5,
             }
         );
     }
@@ -315,7 +328,8 @@ mod tests {
             CalculatorResult {
                 restrict: LimitingResource::Balance,
                 exact_range: 32.0,
-                complete_range: 32
+                complete_range: 32,
+                speed: 2.5,
             }
         );
     }

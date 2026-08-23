@@ -47,6 +47,9 @@ pub struct EngineSpec {
 
     pub height: u32,
     pub max_rocket_height: u32,
+
+    pub engine_power: u32,
+    pub burden: u32,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -72,6 +75,8 @@ impl EngineKind {
                 requires_oxidizer: true,
                 height: 5,
                 max_rocket_height: 35,
+                engine_power: 55,
+                burden: 7,
             },
             EngineKind::Steam => EngineSpec {
                 id: "SteamEngine",
@@ -82,6 +87,8 @@ impl EngineKind {
                 requires_oxidizer: false, // 蒸汽引擎不需要氧化剂
                 height: 5,
                 max_rocket_height: 25,
+                engine_power: 27,
+                burden: 15,
             },
             EngineKind::Petroleum => EngineSpec {
                 id: "PetroleumEngine",
@@ -92,6 +99,8 @@ impl EngineKind {
                 requires_oxidizer: true,
                 height: 5,
                 max_rocket_height: 35,
+                engine_power: 48,
+                burden: 6,
             },
         }
     }
