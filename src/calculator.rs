@@ -401,4 +401,25 @@ mod tests {
             assert_eq!(spec.max_rocket_height, expected_max_height);
         }
     }
+    #[test]
+    fn rocket_exceeds_max_height() {
+        let input = CalculatorInput {
+            rocket: RocketInput {
+                engine: EngineKind::Steam,
+                fuel_amount: 150.0,
+                oxidizer_input: None,
+                modules: vec![
+                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
+                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
+                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
+                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
+                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
+                ],
+            },
+        };
+
+        let output = calculate(input);
+
+        assert_eq!(output, Err(CalculatorError::RocketExceedsMaxHeight));
+    }
 }
