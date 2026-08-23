@@ -207,6 +207,11 @@ impl OxidizerTankKind {
             },
         }
     }
+    pub const ALL: [OxidizerTankKind; 3] = [
+        OxidizerTankKind::SmallSolid,
+        OxidizerTankKind::LargeSolid,
+        OxidizerTankKind::Liquid,
+    ];
 }
 
 #[derive(Debug, Clone, Copy)]

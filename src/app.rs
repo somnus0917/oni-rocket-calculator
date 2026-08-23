@@ -1,4 +1,4 @@
-use crate::calculator::{CalculatorInput, CalculatorResult, LimitingResource, calculate};
+use crate::calculator::{CalculatorInput, CalculatorResult, calculate};
 use crate::models::{
     EngineKind, FuelStorage, FuelTankKind, OxidizerInput, OxidizerKind, OxidizerStorageKind,
     OxidizerTankKind, RocketInput, RocketModule,
@@ -9,11 +9,16 @@ pub fn App() -> impl IntoView {
     let oxidizer_amount = RwSignal::new("".to_string());
     let fuel_amount = RwSignal::new("".to_string());
     let oxidizer = RwSignal::new(OxidizerKind::LiquidOxygen);
+    let oxidizer_tank = RwSignal::new(OxidizerTankKind::Liquid);
+    let oxidizer_tank_count_input = RwSignal::new("1".to_string());
     let oxidizer_name = move || oxidizer.get().spec().name;
     let engine = RwSignal::new(EngineKind::Steam);
     let engine_name = move || engine.get().spec().name;
     let requires_oxidizer = move || engine.get().spec().requires_oxidizer;
     let result = RwSignal::new(None::<CalculatorResult>);
+    let fuel_tank_count_input = RwSignal::new("1".to_string());
+    let requires_external_fuel_tank =
+        move || matches!(engine.get().spec().fuel_storage, FuelStorage::ExternalTank);
     let on_calculate = move |_: MouseEvent| {
         match fuel_amount.get().parse::<f32>() {
             Ok(value) => {
@@ -25,7 +30,13 @@ pub fn App() -> impl IntoView {
                 match current_engine.spec().fuel_storage {
                     FuelStorage::Internal { .. } => {}
                     FuelStorage::ExternalTank => {
-                        modules.push(RocketModule::FuelTank(FuelTankKind::LargeLiquid));
+                        let fuel_tank_count = match fuel_tank_count_input.get().parse::<usize>() {
+                            Ok(count) => count,
+                            Err(_) => return,
+                        };
+                        for _ in 0..fuel_tank_count {
+                            modules.push(RocketModule::FuelTank(FuelTankKind::LargeLiquid));
+                        }
                     }
                 }
 
@@ -33,11 +44,7 @@ pub fn App() -> impl IntoView {
                 let oxidizer_input = if current_engine.spec().requires_oxidizer {
                     match oxidizer_amount.get().parse::<f32>() {
                         Ok(amount) => {
-                            let oxidizer_tank = match current_oxidizer.storage_kind() {
-                                OxidizerStorageKind::Liquid => OxidizerTankKind::Liquid,
-                                OxidizerStorageKind::Solid => OxidizerTankKind::LargeSolid,
-                            };
-                            modules.push(RocketModule::OxidizerTank(oxidizer_tank));
+                            modules.push(RocketModule::OxidizerTank(oxidizer_tank.get()));
                             Some(OxidizerInput {
                                 oxidizer: current_oxidizer,
                                 oxidizer_amount: amount,
@@ -86,8 +93,20 @@ pub fn App() -> impl IntoView {
         />
         </label>
         <EngineSelector engine=engine/>
+        <Show when=requires_external_fuel_tank>
+            <label>
+                "燃料舱数量："
+                <input
+                    type="number"
+                    min="0"
+                    bind:value=fuel_tank_count_input
+                >
+                </input>
+            </label>
+        </Show>
         <Show when=requires_oxidizer>
             <OxidizerSelector oxidizer=oxidizer oxidizer_amount=oxidizer_amount/>
+            <OxidizerTankSelector oxidizer_tank=oxidizer_tank oxidizer_tank_count_input=oxidizer_tank_count_input/>
         </Show>
         <p>"你选择的引擎是" {engine_name} "."</p>
         <p>"燃料量是: " {fuel_amount}</p>
@@ -171,6 +190,45 @@ fn OxidizerSelector(
     }
 }
 
+#[component]
+fn OxidizerTankSelector(
+    oxidizer_tank: RwSignal<OxidizerTankKind>,
+    oxidizer_tank_count_input: RwSignal<String>,
+) -> impl IntoView {
+    view! {
+        <fieldset>
+            <legend>"氧化剂舱"</legend>
+            {
+                OxidizerTankKind::ALL.into_iter().map(|kind| {
+                    let name = kind.spec().name;
+                    view! {
+                        <label>
+                            {name}
+                            <input
+                                type="radio"
+                                name="oxidizer_name"
+                                prop:checked=move ||{
+                                    oxidizer_tank.get()==kind
+                                }
+                                on:change=move |_| {
+                                    oxidizer_tank.set(kind);
+                                }
+                                />
+                        </label>
+                    }
+                }).collect_view()
+            }
+            <label>
+                "氧化剂舱数量："
+                <input
+                    type="number"
+                    min="0"
+                    bind:value=oxidizer_tank_count_input
+                />
+            </label>
+        </fieldset>
+    }
+}
 #[component]
 fn ResultDisplay(result: ReadSignal<Option<CalculatorResult>>) -> impl IntoView {
     view! {
