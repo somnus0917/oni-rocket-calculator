@@ -14,11 +14,6 @@ pub fn App() -> impl IntoView {
     let engine_name = move || engine.get().spec().name;
     let requires_oxidizer = move || engine.get().spec().requires_oxidizer;
     let result = RwSignal::new(None::<CalculatorResult>);
-    let limiting_resource_name = |resource: &LimitingResource| match resource {
-        LimitingResource::Balance => "燃料和氧化剂平衡",
-        LimitingResource::Fuel => "燃料",
-        LimitingResource::Oxidizer => "氧化剂",
-    };
     let on_calculate = move |_: MouseEvent| {
         match fuel_amount.get().parse::<f32>() {
             Ok(value) => {
@@ -182,9 +177,10 @@ fn ResultDisplay(result: ReadSignal<Option<CalculatorResult>>) -> impl IntoView 
         {move || {
             result.get().map(|value| {
                 format!(
-                    "理论航程: {:.2}，完整航程: {}，限制资源: {:?}",
+                    "理论航程: {:.2}，完整航程: {}，速度：{:.2}格，限制资源: {:?}",
                     value.exact_range,
                     value.complete_range,
+                    value.speed,
                     value.restrict
                 )
             })
