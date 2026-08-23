@@ -44,7 +44,14 @@ pub fn App() -> impl IntoView {
                 let oxidizer_input = if current_engine.spec().requires_oxidizer {
                     match oxidizer_amount.get().parse::<f32>() {
                         Ok(amount) => {
-                            modules.push(RocketModule::OxidizerTank(oxidizer_tank.get()));
+                            let oxidizer_tank_count_input =
+                                match oxidizer_tank_count_input.get().parse::<usize>() {
+                                    Ok(count) => count,
+                                    Err(_) => return,
+                                };
+                            for _ in 0..oxidizer_tank_count_input {
+                                modules.push(RocketModule::OxidizerTank(oxidizer_tank.get()));
+                            }
                             Some(OxidizerInput {
                                 oxidizer: current_oxidizer,
                                 oxidizer_amount: amount,
