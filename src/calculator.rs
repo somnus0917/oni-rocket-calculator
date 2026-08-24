@@ -438,7 +438,7 @@ mod tests {
     }
 
     #[test]
-    fn mutioxidizertanktest() {
+    fn multiple_oxidizer_tanks_capacity_and_speed() {
         let input = CalculatorInput {
             rocket: RocketInput {
                 engine: EngineKind::Hydrogen,
@@ -455,6 +455,8 @@ mod tests {
             },
         };
         let output = calculate(input).unwrap();
-        assert_eq!(output.speed, 2.5f32)
+        assert!((output.speed - 2.5).abs() < 1e-5);
+        assert_eq!(output.complete_range, 16);
+        assert_eq!(output.restrict, LimitingResource::Fuel);
     }
 }

@@ -20,6 +20,7 @@ pub fn App() -> impl IntoView {
     let requires_external_fuel_tank =
         move || matches!(engine.get().spec().fuel_storage, FuelStorage::ExternalTank);
     let on_calculate = move |_: MouseEvent| {
+        result.set(None);
         match fuel_amount.get().parse::<f32>() {
             Ok(value) => {
                 let current_engine = engine.get();
