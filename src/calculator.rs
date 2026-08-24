@@ -436,4 +436,25 @@ mod tests {
 
         assert_eq!(output, Err(CalculatorError::RocketExceedsMaxHeight));
     }
+
+    #[test]
+    fn mutioxidizertanktest() {
+        let input = CalculatorInput {
+            rocket: RocketInput {
+                engine: EngineKind::Hydrogen,
+                fuel_amount: 900.0,
+                oxidizer_input: Some(OxidizerInput {
+                    oxidizer: OxidizerKind::LiquidOxygen,
+                    oxidizer_amount: 600.0,
+                }),
+                modules: vec![
+                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
+                    RocketModule::OxidizerTank(OxidizerTankKind::Liquid),
+                    RocketModule::OxidizerTank(OxidizerTankKind::Liquid),
+                ],
+            },
+        };
+        let output = calculate(input).unwrap();
+        assert_eq!(output.speed, 2.5f32)
+    }
 }

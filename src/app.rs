@@ -1,7 +1,7 @@
 use crate::calculator::{CalculatorInput, CalculatorResult, calculate};
 use crate::models::{
-    EngineKind, FuelStorage, FuelTankKind, OxidizerInput, OxidizerKind, OxidizerStorageKind,
-    OxidizerTankKind, RocketInput, RocketModule,
+    EngineKind, FuelStorage, FuelTankKind, OxidizerInput, OxidizerKind, OxidizerTankKind,
+    RocketInput, RocketModule,
 };
 use leptos::{ev::MouseEvent, prelude::*};
 #[component]
@@ -44,12 +44,12 @@ pub fn App() -> impl IntoView {
                 let oxidizer_input = if current_engine.spec().requires_oxidizer {
                     match oxidizer_amount.get().parse::<f32>() {
                         Ok(amount) => {
-                            let oxidizer_tank_count_input =
+                            let oxidizer_tank_count =
                                 match oxidizer_tank_count_input.get().parse::<usize>() {
                                     Ok(count) => count,
                                     Err(_) => return,
                                 };
-                            for _ in 0..oxidizer_tank_count_input {
+                            for _ in 0..oxidizer_tank_count {
                                 modules.push(RocketModule::OxidizerTank(oxidizer_tank.get()));
                             }
                             Some(OxidizerInput {
@@ -213,7 +213,7 @@ fn OxidizerTankSelector(
                             {name}
                             <input
                                 type="radio"
-                                name="oxidizer_name"
+                                name="oxidizer_tank"
                                 prop:checked=move ||{
                                     oxidizer_tank.get()==kind
                                 }
@@ -242,7 +242,7 @@ fn ResultDisplay(result: ReadSignal<Option<CalculatorResult>>) -> impl IntoView 
         {move || {
             result.get().map(|value| {
                 format!(
-                    "理论航程: {:.2}，完整航程: {}，速度：{:.2}格，限制资源: {:?}",
+                    "理论航程: {:.2}，完整航程: {}，速度：{:.2}格/周期，限制资源: {:?}",
                     value.exact_range,
                     value.complete_range,
                     value.speed,
