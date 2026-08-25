@@ -26,6 +26,8 @@ pub enum CalculatorError {
     OxidizerExceedsCapacity,
     IncompatibleOxidizerTank,
     RocketExceedsMaxHeight,
+    CommandModuleTooMuch,
+    CommandModuleTooLess,
 }
 
 pub fn calculate(input: CalculatorInput) -> Result<CalculatorResult, CalculatorError> {
@@ -36,6 +38,17 @@ pub fn calculate(input: CalculatorInput) -> Result<CalculatorResult, CalculatorE
         return Err(CalculatorError::NegativeFuel);
     }
     let module_height: u32 = rocket.modules.iter().map(|module| module.height()).sum();
+    let command_module_count = rocket
+        .modules
+        .iter()
+        .filter(|module| matches!(module, RocketModule::Spacefarer(_)))
+        .count();
+    if command_module_count <= 0 {
+        return Err(CalculatorError::CommandModuleTooLess);
+    }
+    if command_module_count > 1 {
+        return Err(CalculatorError::CommandModuleTooMuch);
+    }
     let total_height = engine.height + module_height;
     if total_height > engine.max_rocket_height {
         return Err(CalculatorError::RocketExceedsMaxHeight);
@@ -135,6 +148,7 @@ mod tests {
                 modules: vec![
                     RocketModule::FuelTank(FuelTankKind::LargeLiquid),
                     RocketModule::OxidizerTank(OxidizerTankKind::LargeSolid),
+                    RocketModule::Spacefarer(SpacefarerKind::SoloSpacefarerNosecone),
                 ],
             },
         };
@@ -143,9 +157,9 @@ mod tests {
             restrict: LimitingResource::Oxidizer,
             exact_range: 14.222222,
             complete_range: 14,
-            speed: 55.0 / 17.0,
-            total_height: 15,
-            total_burden: 17,
+            speed: 55.0 / 20.0,
+            total_height: 18,
+            total_burden: 20,
         };
         assert_eq!(expected.restrict, output.restrict);
         assert_eq!(expected.complete_range, output.complete_range);
@@ -168,6 +182,7 @@ mod tests {
                 modules: vec![
                     RocketModule::FuelTank(FuelTankKind::LargeLiquid),
                     RocketModule::OxidizerTank(OxidizerTankKind::Liquid),
+                    RocketModule::Spacefarer(SpacefarerKind::SoloSpacefarerNosecone),
                 ],
             },
         };
@@ -176,9 +191,9 @@ mod tests {
             restrict: LimitingResource::Balance,
             exact_range: 14.222222,
             complete_range: 14,
-            speed: 55.0 / 17.0,
-            total_height: 12,
-            total_burden: 17,
+            speed: 55.0 / 20.0,
+            total_height: 15,
+            total_burden: 20,
         };
         assert_eq!(expected.restrict, output.restrict);
         assert_eq!(expected.complete_range, output.complete_range);
@@ -194,7 +209,10 @@ mod tests {
                 engine: EngineKind::Hydrogen,
                 fuel_amount: 900.0,
                 oxidizer_input: None, // 没带氧化剂！
-                modules: vec![RocketModule::FuelTank(FuelTankKind::LargeLiquid)],
+                modules: vec![
+                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
+                    RocketModule::Spacefarer(SpacefarerKind::SoloSpacefarerNosecone),
+                ],
             },
         };
         let output = calculate(input);
@@ -207,7 +225,9 @@ mod tests {
                 engine: EngineKind::Steam,
                 fuel_amount: 150.0,
                 oxidizer_input: None, // 不需要氧化剂
-                modules: vec![],
+                modules: vec![RocketModule::Spacefarer(
+                    SpacefarerKind::SoloSpacefarerNosecone,
+                )],
             },
         };
         let output = calculate(input).unwrap();
@@ -215,9 +235,9 @@ mod tests {
             restrict: LimitingResource::Fuel,
             exact_range: 10.0,
             complete_range: 10,
-            speed: 27.0 / 15.0,
-            total_height: 5,
-            total_burden: 15,
+            speed: 27.0 / 18.0,
+            total_height: 8,
+            total_burden: 18,
         };
         assert_eq!(expected.restrict, output.restrict);
         assert_eq!(expected.complete_range, output.complete_range);
@@ -239,6 +259,7 @@ mod tests {
                 modules: vec![
                     RocketModule::FuelTank(FuelTankKind::LargeLiquid),
                     RocketModule::OxidizerTank(OxidizerTankKind::LargeSolid),
+                    RocketModule::Spacefarer(SpacefarerKind::SoloSpacefarerNosecone),
                 ],
             },
         };
@@ -252,7 +273,9 @@ mod tests {
                 engine: EngineKind::Steam,
                 fuel_amount: -200.0,
                 oxidizer_input: None,
-                modules: vec![],
+                modules: vec![RocketModule::Spacefarer(
+                    SpacefarerKind::SoloSpacefarerNosecone,
+                )],
             },
         };
         let output = calculate(input);
@@ -266,7 +289,9 @@ mod tests {
                 engine: EngineKind::Steam,
                 fuel_amount: 151.0,
                 oxidizer_input: None,
-                modules: vec![],
+                modules: vec![RocketModule::Spacefarer(
+                    SpacefarerKind::SoloSpacefarerNosecone,
+                )],
             },
         };
         let output = calculate(input);
@@ -286,6 +311,7 @@ mod tests {
                 modules: vec![
                     RocketModule::FuelTank(FuelTankKind::LargeLiquid),
                     RocketModule::OxidizerTank(OxidizerTankKind::LargeSolid),
+                    RocketModule::Spacefarer(SpacefarerKind::SoloSpacefarerNosecone),
                 ],
             },
         };
@@ -307,6 +333,7 @@ mod tests {
                     RocketModule::FuelTank(FuelTankKind::LargeLiquid),
                     RocketModule::FuelTank(FuelTankKind::LargeLiquid),
                     RocketModule::OxidizerTank(OxidizerTankKind::Liquid),
+                    RocketModule::Spacefarer(SpacefarerKind::SoloSpacefarerNosecone),
                 ],
             },
         };
@@ -317,9 +344,9 @@ mod tests {
                 restrict: LimitingResource::Balance,
                 exact_range: 32.0,
                 complete_range: 32,
-                speed: 2.5,
-                total_height: 17,
-                total_burden: 22,
+                speed: 2.2,
+                total_height: 20,
+                total_burden: 25,
             }
         );
     }
@@ -338,6 +365,7 @@ mod tests {
                     RocketModule::FuelTank(FuelTankKind::LargeLiquid),
                     RocketModule::FuelTank(FuelTankKind::LargeLiquid),
                     RocketModule::OxidizerTank(OxidizerTankKind::Liquid),
+                    RocketModule::Spacefarer(SpacefarerKind::SoloSpacefarerNosecone),
                 ],
             },
         };
@@ -348,9 +376,9 @@ mod tests {
                 restrict: LimitingResource::Balance,
                 exact_range: 32.0,
                 complete_range: 32,
-                speed: 2.5,
-                total_height: 17,
-                total_burden: 22,
+                speed: 2.2,
+                total_height: 20,
+                total_burden: 25,
             }
         );
     }
@@ -367,6 +395,7 @@ mod tests {
                 modules: vec![
                     RocketModule::FuelTank(FuelTankKind::LargeLiquid),
                     RocketModule::OxidizerTank(OxidizerTankKind::LargeSolid),
+                    RocketModule::Spacefarer(SpacefarerKind::SoloSpacefarerNosecone),
                 ],
             },
         };
@@ -387,6 +416,7 @@ mod tests {
                     RocketModule::FuelTank(FuelTankKind::LargeLiquid),
                     RocketModule::FuelTank(FuelTankKind::LargeLiquid),
                     RocketModule::OxidizerTank(OxidizerTankKind::Liquid),
+                    RocketModule::Spacefarer(SpacefarerKind::SoloSpacefarerNosecone),
                 ],
             },
         };
@@ -401,6 +431,10 @@ mod tests {
             (RocketModule::OxidizerTank(OxidizerTankKind::SmallSolid), 2),
             (RocketModule::OxidizerTank(OxidizerTankKind::LargeSolid), 5),
             (RocketModule::OxidizerTank(OxidizerTankKind::Liquid), 2),
+            (
+                RocketModule::Spacefarer(SpacefarerKind::SoloSpacefarerNosecone),
+                3,
+            ),
         ];
 
         for (module, expected_height) in modules {
@@ -415,6 +449,10 @@ mod tests {
             (RocketModule::OxidizerTank(OxidizerTankKind::SmallSolid), 2),
             (RocketModule::OxidizerTank(OxidizerTankKind::LargeSolid), 5),
             (RocketModule::OxidizerTank(OxidizerTankKind::Liquid), 5),
+            (
+                RocketModule::Spacefarer(SpacefarerKind::SoloSpacefarerNosecone),
+                3,
+            ),
         ];
 
         for (module, expected_burden) in modules {
@@ -449,6 +487,7 @@ mod tests {
                     RocketModule::FuelTank(FuelTankKind::LargeLiquid),
                     RocketModule::FuelTank(FuelTankKind::LargeLiquid),
                     RocketModule::FuelTank(FuelTankKind::LargeLiquid),
+                    RocketModule::Spacefarer(SpacefarerKind::SoloSpacefarerNosecone),
                 ],
             },
         };
@@ -472,16 +511,49 @@ mod tests {
                     RocketModule::FuelTank(FuelTankKind::LargeLiquid),
                     RocketModule::OxidizerTank(OxidizerTankKind::Liquid),
                     RocketModule::OxidizerTank(OxidizerTankKind::Liquid),
+                    RocketModule::Spacefarer(SpacefarerKind::SoloSpacefarerNosecone),
                 ],
             },
         };
         let output = calculate(input).unwrap();
-        assert!((output.speed - 2.5).abs() < 1e-5);
+        assert!((output.speed - 2.2).abs() < 1e-5);
         assert_eq!(output.complete_range, 16);
         assert_eq!(output.restrict, LimitingResource::Fuel);
-        assert_eq!(output.total_height, 14);
-        assert_eq!(output.total_burden, 22);
+        assert_eq!(output.total_height, 17);
+        assert_eq!(output.total_burden, 25);
     }
+
+    #[test]
+    fn command_module_too_less() {
+        let input = CalculatorInput {
+            rocket: RocketInput {
+                engine: EngineKind::Steam,
+                fuel_amount: 0.0,
+                oxidizer_input: None,
+                modules: vec![],
+            },
+        };
+
+        assert_eq!(calculate(input), Err(CalculatorError::CommandModuleTooLess));
+    }
+
+    #[test]
+    fn command_module_too_much() {
+        let input = CalculatorInput {
+            rocket: RocketInput {
+                engine: EngineKind::Steam,
+                fuel_amount: 0.0,
+                oxidizer_input: None,
+                modules: vec![
+                    RocketModule::Spacefarer(SpacefarerKind::SoloSpacefarerNosecone),
+                    RocketModule::Spacefarer(SpacefarerKind::SoloSpacefarerNosecone),
+                ],
+            },
+        };
+
+        assert_eq!(calculate(input), Err(CalculatorError::CommandModuleTooMuch));
+    }
+
     #[test]
     fn spacefarer_test() {
         let input = CalculatorInput {
@@ -502,5 +574,46 @@ mod tests {
         let output = calculate(input).unwrap();
         assert_eq!(output.total_burden, 20);
         assert_eq!(output.total_height, 15);
+    }
+    #[test]
+    fn commandmoduletooless() {
+        let input = CalculatorInput {
+            rocket: RocketInput {
+                engine: EngineKind::Steam,
+                fuel_amount: 150.0,
+                oxidizer_input: None,
+                modules: vec![
+                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
+                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
+                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
+                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
+                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
+                ],
+            },
+        };
+        let output = calculate(input);
+        assert_eq!(output, Err(CalculatorError::CommandModuleTooLess))
+    }
+
+    #[test]
+    fn commandmoduletoomuch() {
+        let input = CalculatorInput {
+            rocket: RocketInput {
+                engine: EngineKind::Steam,
+                fuel_amount: 150.0,
+                oxidizer_input: None,
+                modules: vec![
+                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
+                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
+                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
+                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
+                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
+                    RocketModule::Spacefarer(SpacefarerKind::SoloSpacefarerNosecone),
+                    RocketModule::Spacefarer(SpacefarerKind::SoloSpacefarerNosecone),
+                ],
+            },
+        };
+        let output = calculate(input);
+        assert_eq!(output, Err(CalculatorError::CommandModuleTooMuch))
     }
 }

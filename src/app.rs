@@ -278,6 +278,8 @@ pub fn error_message_text(error: &CalculatorError) -> &'static str {
         CalculatorError::OxidizerExceedsCapacity => "氧化剂超过容量",
         CalculatorError::IncompatibleOxidizerTank => "氧化剂舱类型不兼容",
         CalculatorError::RocketExceedsMaxHeight => "火箭超过最大高度",
+        CalculatorError::CommandModuleTooLess => "指挥舱数量不能为0",
+        CalculatorError::CommandModuleTooMuch => "指挥舱数量不能多于1个",
     }
 }
 
