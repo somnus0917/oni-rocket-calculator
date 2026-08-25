@@ -23,9 +23,11 @@ pub fn App() -> impl IntoView {
     let requires_external_fuel_tank =
         move || matches!(engine.get().spec().fuel_storage, FuelStorage::ExternalTank);
     let calculator_error = RwSignal::new(None::<CalculatorError>);
+    let form_error = RwSignal::new(None::<&'static str>);
     let on_calculate = move |_: MouseEvent| {
         result.set(None);
         calculator_error.set(None);
+        form_error.set(None);
         match fuel_amount.get().parse::<f32>() {
             Ok(value) => {
                 let current_engine = engine.get();
@@ -40,7 +42,10 @@ pub fn App() -> impl IntoView {
                     FuelStorage::ExternalTank => {
                         let fuel_tank_count = match fuel_tank_count_input.get().parse::<usize>() {
                             Ok(count) => count,
-                            Err(_) => return,
+                            Err(_) => {
+                                form_error.set(Some("燃料舱数量格式错误"));
+                                return;
+                            }
                         };
                         for _ in 0..fuel_tank_count {
                             modules.push(RocketModule::FuelTank(FuelTankKind::LargeLiquid));
@@ -55,7 +60,10 @@ pub fn App() -> impl IntoView {
                             let oxidizer_tank_count =
                                 match oxidizer_tank_count_input.get().parse::<usize>() {
                                     Ok(count) => count,
-                                    Err(_) => return,
+                                    Err(_) => {
+                                        form_error.set(Some("氧化剂舱数量格式错误"));
+                                        return;
+                                    }
                                 };
                             for _ in 0..oxidizer_tank_count {
                                 modules.push(RocketModule::OxidizerTank(oxidizer_tank.get()));
@@ -66,6 +74,7 @@ pub fn App() -> impl IntoView {
                             })
                         }
                         Err(_) => {
+                            form_error.set(Some("请输入正确的氧化剂量"));
                             return;
                         }
                     }
@@ -141,6 +150,13 @@ pub fn App() -> impl IntoView {
             calculator_error.get().map(|error| {
                 view! {
                     <p class="error">{error_message_text(&error)}</p>
+                }
+            })
+        }}
+        {move || {
+            form_error.get().map(|message| {
+                view! {
+                    <p class="error">{message}</p>
                 }
             })
         }}
