@@ -255,11 +255,13 @@ fn ResultDisplay(result: ReadSignal<Option<CalculatorResult>>) -> impl IntoView 
         {move || {
             result.get().map(|value| {
                 format!(
-                    "理论航程: {:.2}，完整航程: {}，速度：{:.2}格/周期，限制资源: {:?}",
+                    "理论航程: {:.2}，完整航程: {}，速度：{:.2}格/周期，限制资源: {:?}，总高度{}：总负担：{}",
                     value.exact_range,
                     value.complete_range,
                     value.speed,
-                    value.restrict
+                    value.restrict,
+                    value.total_height,
+                    value.total_burden,
                 )
             })
         }}

@@ -14,6 +14,8 @@ pub struct CalculatorResult {
     pub exact_range: f32,
     pub complete_range: u32,
     pub speed: f32,
+    pub total_height: u32,
+    pub total_burden: u32,
 }
 #[derive(Debug, PartialEq, Clone)]
 pub enum CalculatorError {
@@ -110,6 +112,8 @@ pub fn calculate(input: CalculatorInput) -> Result<CalculatorResult, CalculatorE
         exact_range,
         complete_range: exact_range.floor() as u32,
         speed,
+        total_height,
+        total_burden,
     })
 }
 
@@ -140,11 +144,15 @@ mod tests {
             exact_range: 14.222222,
             complete_range: 14,
             speed: 55.0 / 17.0,
+            total_height: 15,
+            total_burden: 17,
         };
         assert_eq!(expected.restrict, output.restrict);
         assert_eq!(expected.complete_range, output.complete_range);
         assert!((output.exact_range - expected.exact_range).abs() < 1e-5);
-        assert!((output.speed - expected.speed).abs() < 1e-5)
+        assert!((output.speed - expected.speed).abs() < 1e-5);
+        assert_eq!(expected.total_height, output.total_height);
+        assert_eq!(expected.total_burden, output.total_burden)
     }
 
     #[test]
@@ -169,11 +177,15 @@ mod tests {
             exact_range: 14.222222,
             complete_range: 14,
             speed: 55.0 / 17.0,
+            total_height: 12,
+            total_burden: 17,
         };
         assert_eq!(expected.restrict, output.restrict);
         assert_eq!(expected.complete_range, output.complete_range);
         assert!((output.exact_range - expected.exact_range).abs() < 1e-5);
-        assert!((output.speed - expected.speed).abs() < 1e-5)
+        assert!((output.speed - expected.speed).abs() < 1e-5);
+        assert_eq!(expected.total_height, output.total_height);
+        assert_eq!(expected.total_burden, output.total_burden)
     }
     #[test]
     fn no_oxidizer_hydrogen() {
@@ -204,11 +216,15 @@ mod tests {
             exact_range: 10.0,
             complete_range: 10,
             speed: 27.0 / 15.0,
+            total_height: 5,
+            total_burden: 15,
         };
         assert_eq!(expected.restrict, output.restrict);
         assert_eq!(expected.complete_range, output.complete_range);
         assert!((output.exact_range - expected.exact_range).abs() < 1e-5);
-        assert!((output.speed - expected.speed).abs() < 1e-5)
+        assert!((output.speed - expected.speed).abs() < 1e-5);
+        assert_eq!(expected.total_height, output.total_height);
+        assert_eq!(expected.total_burden, output.total_burden)
     }
     #[test]
     fn negative_oxizidizer() {
@@ -302,6 +318,8 @@ mod tests {
                 exact_range: 32.0,
                 complete_range: 32,
                 speed: 2.5,
+                total_height: 17,
+                total_burden: 22,
             }
         );
     }
@@ -331,6 +349,8 @@ mod tests {
                 exact_range: 32.0,
                 complete_range: 32,
                 speed: 2.5,
+                total_height: 17,
+                total_burden: 22,
             }
         );
     }
