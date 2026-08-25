@@ -19,10 +19,10 @@ pub fn App() -> impl IntoView {
     let fuel_tank_count_input = RwSignal::new("1".to_string());
     let requires_external_fuel_tank =
         move || matches!(engine.get().spec().fuel_storage, FuelStorage::ExternalTank);
-    let error_message = RwSignal::new(None::<CalculatorError>);
+    let calculator_error = RwSignal::new(None::<CalculatorError>);
     let on_calculate = move |_: MouseEvent| {
         result.set(None);
-        error_message.set(None);
+        calculator_error.set(None);
         match fuel_amount.get().parse::<f32>() {
             Ok(value) => {
                 let current_engine = engine.get();
@@ -81,13 +81,13 @@ pub fn App() -> impl IntoView {
 
                 match calculated {
                     Ok(calculated) => {
-                        error_message.set(None);
+                        calculator_error.set(None);
                         result.set(Some(calculated));
                     }
 
                     Err(error) => {
                         leptos::logging::log!("计算错误: {:?}", error);
-                        error_message.set(Some(error));
+                        calculator_error.set(Some(error));
                     }
                 }
             }
@@ -132,7 +132,7 @@ pub fn App() -> impl IntoView {
             "计算"
         </button>
         {move || {
-            error_message.get().map(|error| {
+            calculator_error.get().map(|error| {
                 view! {
                     <p class="error">{error_message_text(&error)}</p>
                 }
