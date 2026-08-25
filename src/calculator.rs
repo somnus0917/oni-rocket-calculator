@@ -479,5 +479,7 @@ mod tests {
         assert!((output.speed - 2.5).abs() < 1e-5);
         assert_eq!(output.complete_range, 16);
         assert_eq!(output.restrict, LimitingResource::Fuel);
+        assert_eq!(output.total_height, 14);
+        assert_eq!(output.total_burden, 22);
     }
 }
