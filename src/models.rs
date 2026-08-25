@@ -246,6 +246,32 @@ impl SpacefarerKind {
     pub const ALL: [SpacefarerKind; 1] = [SpacefarerKind::SoloSpacefarerNosecone];
 }
 
+// 前锥模块
+#[derive(Debug, Clone, Copy)]
+pub struct NoseconeSpec {
+    id: &'static str,
+    name: &'static str,
+    height: u32,
+    burden: u32,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum NoseconeKind {
+    BasicNosecone,
+}
+
+impl NoseconeKind {
+    pub fn spec(self) -> NoseconeSpec {
+        match self {
+            NoseconeKind::BasicNosecone => NoseconeSpec {
+                id: "BasicNosecone",
+                name: "基础前锥",
+                height: 2,
+                burden: 2,
+            },
+        }
+    }
+}
 //火箭相关
 pub struct RocketInput {
     pub engine: EngineKind,
