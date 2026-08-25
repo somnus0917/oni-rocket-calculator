@@ -1,4 +1,6 @@
-use crate::calculator::{CalculatorError, CalculatorInput, CalculatorResult, calculate};
+use crate::calculator::{
+    CalculatorError, CalculatorInput, CalculatorResult, LimitingResource, calculate,
+};
 use crate::models::{
     EngineKind, FuelStorage, FuelTankKind, OxidizerInput, OxidizerKind, OxidizerTankKind,
     RocketInput, RocketModule,
@@ -255,11 +257,11 @@ fn ResultDisplay(result: ReadSignal<Option<CalculatorResult>>) -> impl IntoView 
         {move || {
             result.get().map(|value| {
                 format!(
-                    "理论航程: {:.2}，完整航程: {}，速度：{:.2}格/周期，限制资源: {:?}，总高度：{}：总负担：{}",
+                    "理论航程: {:.2}，完整航程: {}，速度：{:.2}格/周期，限制资源: {}，总高度：{}：总负担：{}",
                     value.exact_range,
                     value.complete_range,
                     value.speed,
-                    value.restrict,
+                    limiting_resource(&value.restrict),
                     value.total_height,
                     value.total_burden,
                 )
@@ -276,5 +278,13 @@ pub fn error_message_text(error: &CalculatorError) -> &'static str {
         CalculatorError::OxidizerExceedsCapacity => "氧化剂超过容量",
         CalculatorError::IncompatibleOxidizerTank => "氧化剂舱类型不兼容",
         CalculatorError::RocketExceedsMaxHeight => "火箭超过最大高度",
+    }
+}
+
+pub fn limiting_resource(limit: &LimitingResource) -> &'static str {
+    match limit {
+        LimitingResource::Balance => "刚好平衡",
+        LimitingResource::Fuel => "燃料",
+        LimitingResource::Oxidizer => "氧化剂",
     }
 }
