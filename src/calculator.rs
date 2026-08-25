@@ -15,7 +15,7 @@ pub struct CalculatorResult {
     pub complete_range: u32,
     pub speed: f32,
 }
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum CalculatorError {
     NegativeFuel,
     MissingOxidizer,
@@ -25,17 +25,7 @@ pub enum CalculatorError {
     IncompatibleOxidizerTank,
     RocketExceedsMaxHeight,
 }
-pub fn error_message_text(error: &CalculatorError) -> &'static str {
-    match error {
-        CalculatorError::NegativeFuel => "燃料量不能为负数",
-        CalculatorError::MissingOxidizer => "缺少氧化剂",
-        CalculatorError::NegativeOxidizer => "氧化剂量不能为负数",
-        CalculatorError::FuelExceedsCapacity => "燃料超过容量",
-        CalculatorError::OxidizerExceedsCapacity => "氧化剂超过容量",
-        CalculatorError::IncompatibleOxidizerTank => "氧化剂舱类型不兼容",
-        CalculatorError::RocketExceedsMaxHeight => "火箭超过最大高度",
-    }
-}
+
 pub fn calculate(input: CalculatorInput) -> Result<CalculatorResult, CalculatorError> {
     let rocket = input.rocket;
     let engine = rocket.engine.spec();

@@ -1,6 +1,4 @@
-use crate::calculator::{
-    CalculatorError, CalculatorInput, CalculatorResult, calculate, error_message_text,
-};
+use crate::calculator::{CalculatorError, CalculatorInput, CalculatorResult, calculate};
 use crate::models::{
     EngineKind, FuelStorage, FuelTankKind, OxidizerInput, OxidizerKind, OxidizerTankKind,
     RocketInput, RocketModule,
@@ -21,9 +19,10 @@ pub fn App() -> impl IntoView {
     let fuel_tank_count_input = RwSignal::new("1".to_string());
     let requires_external_fuel_tank =
         move || matches!(engine.get().spec().fuel_storage, FuelStorage::ExternalTank);
-    let error_message = RwSignal::new(None::<String>);
+    let error_message = RwSignal::new(None::<CalculatorError>);
     let on_calculate = move |_: MouseEvent| {
         result.set(None);
+        error_message.set(None);
         match fuel_amount.get().parse::<f32>() {
             Ok(value) => {
                 let current_engine = engine.get();
@@ -87,8 +86,8 @@ pub fn App() -> impl IntoView {
                     }
 
                     Err(error) => {
-                        error_message.set(Some((error_message_text(&error)).to_string()));
                         leptos::logging::log!("计算错误: {:?}", error);
+                        error_message.set(Some(error));
                     }
                 }
             }
@@ -133,9 +132,9 @@ pub fn App() -> impl IntoView {
             "计算"
         </button>
         {move || {
-            error_message.get().map(|message| {
+            error_message.get().map(|error| {
                 view! {
-                    <p class="error">{message}</p>
+                    <p class="error">{error_message_text(&error)}</p>
                 }
             })
         }}
@@ -264,5 +263,16 @@ fn ResultDisplay(result: ReadSignal<Option<CalculatorResult>>) -> impl IntoView 
                 )
             })
         }}
+    }
+}
+pub fn error_message_text(error: &CalculatorError) -> &'static str {
+    match error {
+        CalculatorError::NegativeFuel => "燃料量不能为负数",
+        CalculatorError::MissingOxidizer => "缺少氧化剂",
+        CalculatorError::NegativeOxidizer => "氧化剂量不能为负数",
+        CalculatorError::FuelExceedsCapacity => "燃料超过容量",
+        CalculatorError::OxidizerExceedsCapacity => "氧化剂超过容量",
+        CalculatorError::IncompatibleOxidizerTank => "氧化剂舱类型不兼容",
+        CalculatorError::RocketExceedsMaxHeight => "火箭超过最大高度",
     }
 }
