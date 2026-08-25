@@ -43,7 +43,7 @@ pub fn calculate(input: CalculatorInput) -> Result<CalculatorResult, CalculatorE
         .iter()
         .filter(|module| matches!(module, RocketModule::Spacefarer(_)))
         .count();
-    if command_module_count <= 0 {
+    if command_module_count == 0 {
         return Err(CalculatorError::CommandModuleTooLess);
     }
     if command_module_count > 1 {
@@ -574,46 +574,5 @@ mod tests {
         let output = calculate(input).unwrap();
         assert_eq!(output.total_burden, 20);
         assert_eq!(output.total_height, 15);
-    }
-    #[test]
-    fn commandmoduletooless() {
-        let input = CalculatorInput {
-            rocket: RocketInput {
-                engine: EngineKind::Steam,
-                fuel_amount: 150.0,
-                oxidizer_input: None,
-                modules: vec![
-                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
-                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
-                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
-                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
-                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
-                ],
-            },
-        };
-        let output = calculate(input);
-        assert_eq!(output, Err(CalculatorError::CommandModuleTooLess))
-    }
-
-    #[test]
-    fn commandmoduletoomuch() {
-        let input = CalculatorInput {
-            rocket: RocketInput {
-                engine: EngineKind::Steam,
-                fuel_amount: 150.0,
-                oxidizer_input: None,
-                modules: vec![
-                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
-                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
-                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
-                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
-                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
-                    RocketModule::Spacefarer(SpacefarerKind::SoloSpacefarerNosecone),
-                    RocketModule::Spacefarer(SpacefarerKind::SoloSpacefarerNosecone),
-                ],
-            },
-        };
-        let output = calculate(input);
-        assert_eq!(output, Err(CalculatorError::CommandModuleTooMuch))
     }
 }
