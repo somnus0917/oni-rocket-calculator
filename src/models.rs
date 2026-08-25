@@ -228,7 +228,7 @@ pub struct SpacefarerSpec {
     pub burden: u32,
     pub height: u32,
 }
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SpacefarerKind {
     SoloSpacefarerNosecone,
 }
@@ -243,6 +243,7 @@ impl SpacefarerKind {
             },
         }
     }
+    pub const ALL: [SpacefarerKind; 1] = [SpacefarerKind::SoloSpacefarerNosecone];
 }
 
 //火箭相关

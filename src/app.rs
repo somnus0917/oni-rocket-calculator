@@ -3,7 +3,7 @@ use crate::calculator::{
 };
 use crate::models::{
     EngineKind, FuelStorage, FuelTankKind, OxidizerInput, OxidizerKind, OxidizerTankKind,
-    RocketInput, RocketModule,
+    RocketInput, RocketModule, SpacefarerKind,
 };
 use leptos::{ev::MouseEvent, prelude::*};
 #[component]
@@ -16,6 +16,7 @@ pub fn App() -> impl IntoView {
     let oxidizer_name = move || oxidizer.get().spec().name;
     let engine = RwSignal::new(EngineKind::Steam);
     let engine_name = move || engine.get().spec().name;
+    let spacefarer = RwSignal::new(SpacefarerKind::SoloSpacefarerNosecone);
     let requires_oxidizer = move || engine.get().spec().requires_oxidizer;
     let result = RwSignal::new(None::<CalculatorResult>);
     let fuel_tank_count_input = RwSignal::new("1".to_string());
@@ -29,8 +30,10 @@ pub fn App() -> impl IntoView {
             Ok(value) => {
                 let current_engine = engine.get();
                 let current_oxidizer = oxidizer.get();
+                let current_spacefarer = spacefarer.get();
                 let mut modules = Vec::new();
-
+                // 指挥舱
+                modules.push(RocketModule::Spacefarer(current_spacefarer));
                 // 燃料舱
                 match current_engine.spec().fuel_storage {
                     FuelStorage::Internal { .. } => {}
@@ -107,6 +110,7 @@ pub fn App() -> impl IntoView {
         />
         </label>
         <EngineSelector engine=engine/>
+        <CommandModuleSelector spacefarer=spacefarer/>
         <Show when=requires_external_fuel_tank>
             <label>
                 "燃料舱数量："
@@ -267,6 +271,30 @@ fn ResultDisplay(result: ReadSignal<Option<CalculatorResult>>) -> impl IntoView 
                 )
             })
         }}
+    }
+}
+#[component]
+fn CommandModuleSelector(spacefarer: RwSignal<SpacefarerKind>) -> impl IntoView {
+    view! {
+        <fieldset>
+            <legend>"指挥舱选择"</legend>
+            {
+                SpacefarerKind::ALL.into_iter().map(|kind| {
+                    let name = kind.spec().name;
+                    view! {
+                        <label>
+                            {name}
+                            <input
+                                type="radio"
+                                name="spacefarer"
+                                prop:checked=move || spacefarer.get() == kind
+                                on:change=move |_| spacefarer.set(kind)
+                            />
+                        </label>
+                    }
+                }).collect_view()
+            }
+        </fieldset>
     }
 }
 pub fn error_message_text(error: &CalculatorError) -> &'static str {
