@@ -220,6 +220,31 @@ pub struct OxidizerInput {
     pub oxidizer_amount: f32,
 }
 
+// 指挥舱模块
+#[derive(Debug, Clone, Copy)]
+pub struct SpacefarerSpec {
+    pub id: &'static str,
+    pub name: &'static str,
+    pub burden: u32,
+    pub height: u32,
+}
+#[derive(Debug, Clone, Copy)]
+pub enum SpacefarerKind {
+    SoloSpacefarerNosecone,
+}
+impl SpacefarerKind {
+    pub fn spec(self) -> SpacefarerSpec {
+        match self {
+            SpacefarerKind::SoloSpacefarerNosecone => SpacefarerSpec {
+                id: "SoloSpacefarerNosecone",
+                name: "单人指挥舱",
+                burden: 3,
+                height: 3,
+            },
+        }
+    }
+}
+
 //火箭相关
 pub struct RocketInput {
     pub engine: EngineKind,
@@ -232,6 +257,7 @@ pub struct RocketInput {
 pub enum RocketModule {
     FuelTank(FuelTankKind),
     OxidizerTank(OxidizerTankKind),
+    Spacefarer(SpacefarerKind),
 }
 
 impl RocketModule {
@@ -239,12 +265,14 @@ impl RocketModule {
         match self {
             RocketModule::FuelTank(tank) => tank.spec().height,
             RocketModule::OxidizerTank(tank) => tank.spec().height,
+            RocketModule::Spacefarer(farer) => farer.spec().height,
         }
     }
     pub fn burden(self) -> u32 {
         match self {
             RocketModule::FuelTank(tank) => tank.spec().burden,
             RocketModule::OxidizerTank(tank) => tank.spec().burden,
+            RocketModule::Spacefarer(farer) => farer.spec().burden,
         }
     }
 }

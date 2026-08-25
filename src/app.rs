@@ -257,11 +257,11 @@ fn ResultDisplay(result: ReadSignal<Option<CalculatorResult>>) -> impl IntoView 
         {move || {
             result.get().map(|value| {
                 format!(
-                    "理论航程: {:.2}，完整航程: {}，速度：{:.2}格/周期，限制资源: {}，总高度：{}：总负担：{}",
+                    "理论航程: {:.2}，完整航程: {}，速度：{:.2}格/周期，限制资源: {}，总高度：{}，总负担：{}",
                     value.exact_range,
                     value.complete_range,
                     value.speed,
-                    limiting_resource(&value.restrict),
+                    limiting_resource_message(&value.restrict),
                     value.total_height,
                     value.total_burden,
                 )
@@ -281,7 +281,7 @@ pub fn error_message_text(error: &CalculatorError) -> &'static str {
     }
 }
 
-pub fn limiting_resource(limit: &LimitingResource) -> &'static str {
+pub fn limiting_resource_message(limit: &LimitingResource) -> &'static str {
     match limit {
         LimitingResource::Balance => "刚好平衡",
         LimitingResource::Fuel => "燃料",

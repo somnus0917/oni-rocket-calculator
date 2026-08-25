@@ -482,4 +482,25 @@ mod tests {
         assert_eq!(output.total_height, 14);
         assert_eq!(output.total_burden, 22);
     }
+    #[test]
+    fn spacefarer_test() {
+        let input = CalculatorInput {
+            rocket: RocketInput {
+                engine: EngineKind::Hydrogen,
+                fuel_amount: 800.0,
+                oxidizer_input: Some(OxidizerInput {
+                    oxidizer: OxidizerKind::LiquidOxygen,
+                    oxidizer_amount: 200.0,
+                }),
+                modules: vec![
+                    RocketModule::FuelTank(FuelTankKind::LargeLiquid),
+                    RocketModule::OxidizerTank(OxidizerTankKind::Liquid),
+                    RocketModule::Spacefarer(SpacefarerKind::SoloSpacefarerNosecone),
+                ],
+            },
+        };
+        let output = calculate(input).unwrap();
+        assert_eq!(output.total_burden, 20);
+        assert_eq!(output.total_height, 15);
+    }
 }
