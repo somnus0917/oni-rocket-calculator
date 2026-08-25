@@ -106,6 +106,7 @@ pub fn App() -> impl IntoView {
                 }
             }
             Err(_) => {
+                form_error.set(Some("请输入正确的燃料量"));
                 return;
             }
         };
