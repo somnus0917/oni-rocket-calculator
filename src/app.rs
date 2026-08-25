@@ -1,4 +1,6 @@
-use crate::calculator::{CalculatorInput, CalculatorResult, calculate};
+use crate::calculator::{
+    CalculatorError, CalculatorInput, CalculatorResult, calculate, error_message_text,
+};
 use crate::models::{
     EngineKind, FuelStorage, FuelTankKind, OxidizerInput, OxidizerKind, OxidizerTankKind,
     RocketInput, RocketModule,
@@ -19,6 +21,7 @@ pub fn App() -> impl IntoView {
     let fuel_tank_count_input = RwSignal::new("1".to_string());
     let requires_external_fuel_tank =
         move || matches!(engine.get().spec().fuel_storage, FuelStorage::ExternalTank);
+    let error_message = RwSignal::new(None::<String>);
     let on_calculate = move |_: MouseEvent| {
         result.set(None);
         match fuel_amount.get().parse::<f32>() {
@@ -79,10 +82,12 @@ pub fn App() -> impl IntoView {
 
                 match calculated {
                     Ok(calculated) => {
+                        error_message.set(None);
                         result.set(Some(calculated));
                     }
 
                     Err(error) => {
+                        error_message.set(Some((error_message_text(&error)).to_string()));
                         leptos::logging::log!("计算错误: {:?}", error);
                     }
                 }
@@ -127,7 +132,15 @@ pub fn App() -> impl IntoView {
         <button on:click=on_calculate>
             "计算"
         </button>
+        {move || {
+            error_message.get().map(|message| {
+                view! {
+                    <p class="error">{message}</p>
+                }
+            })
+        }}
         <ResultDisplay result=result.read_only()/>
+
     }
 }
 
