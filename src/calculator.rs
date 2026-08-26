@@ -661,4 +661,22 @@ mod tests {
         assert_eq!(output.total_burden, 20);
         assert_eq!(output.total_height, 15);
     }
+    #[test]
+    fn spacefarer_module_with_drillcone_succeeds() {
+        let input = CalculatorInput {
+            rocket: RocketInput {
+                engine: EngineKind::Steam,
+                fuel_amount: 100.0,
+                oxidizer_input: None,
+                modules: vec![
+                    RocketModule::Spacefarer(SpacefarerKind::SpacefarerModule),
+                    RocketModule::Nosecone(NoseconeKind::Drillcone),
+                ],
+            },
+        };
+        let output = calculate(input).unwrap();
+        assert_eq!(output.total_height, 13);
+        assert_eq!(output.total_burden, 23);
+        assert!((output.speed - (27f32 / 23f32)).abs() < 1e-5)
+    }
 }
