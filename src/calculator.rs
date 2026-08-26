@@ -435,6 +435,10 @@ mod tests {
                 RocketModule::Spacefarer(SpacefarerKind::SoloSpacefarerNosecone),
                 3,
             ),
+            (
+                RocketModule::Spacefarer(SpacefarerKind::SpacefarerModule),
+                4,
+            ),
             (RocketModule::Nosecone(NoseconeKind::BasicNosecone), 2),
         ];
 
@@ -453,6 +457,10 @@ mod tests {
             (
                 RocketModule::Spacefarer(SpacefarerKind::SoloSpacefarerNosecone),
                 3,
+            ),
+            (
+                RocketModule::Spacefarer(SpacefarerKind::SpacefarerModule),
+                6,
             ),
             (RocketModule::Nosecone(NoseconeKind::BasicNosecone), 2),
         ];

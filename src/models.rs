@@ -231,6 +231,7 @@ pub struct SpacefarerSpec {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SpacefarerKind {
     SoloSpacefarerNosecone,
+    SpacefarerModule,
 }
 impl SpacefarerKind {
     pub fn spec(self) -> SpacefarerSpec {
@@ -240,6 +241,12 @@ impl SpacefarerKind {
                 name: "单人指挥舱",
                 burden: 3,
                 height: 3,
+            },
+            SpacefarerKind::SpacefarerModule => SpacefarerSpec {
+                id: "SpacefarerModule",
+                name: "太空员舱",
+                burden: 6,
+                height: 4,
             },
         }
     }
