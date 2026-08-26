@@ -435,6 +435,7 @@ mod tests {
                 RocketModule::Spacefarer(SpacefarerKind::SoloSpacefarerNosecone),
                 3,
             ),
+            (RocketModule::Nosecone(NoseconeKind::BasicNosecone), 2),
         ];
 
         for (module, expected_height) in modules {

@@ -249,10 +249,10 @@ impl SpacefarerKind {
 // 前锥模块
 #[derive(Debug, Clone, Copy)]
 pub struct NoseconeSpec {
-    id: &'static str,
-    name: &'static str,
-    height: u32,
-    burden: u32,
+    pub id: &'static str,
+    pub name: &'static str,
+    pub height: u32,
+    pub burden: u32,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -285,6 +285,7 @@ pub enum RocketModule {
     FuelTank(FuelTankKind),
     OxidizerTank(OxidizerTankKind),
     Spacefarer(SpacefarerKind),
+    Nosecone(NoseconeKind),
 }
 
 impl RocketModule {
@@ -293,6 +294,7 @@ impl RocketModule {
             RocketModule::FuelTank(tank) => tank.spec().height,
             RocketModule::OxidizerTank(tank) => tank.spec().height,
             RocketModule::Spacefarer(farer) => farer.spec().height,
+            RocketModule::Nosecone(cone) => cone.spec().height,
         }
     }
     pub fn burden(self) -> u32 {
@@ -300,6 +302,7 @@ impl RocketModule {
             RocketModule::FuelTank(tank) => tank.spec().burden,
             RocketModule::OxidizerTank(tank) => tank.spec().burden,
             RocketModule::Spacefarer(farer) => farer.spec().burden,
+            RocketModule::Nosecone(cone) => cone.spec().burden,
         }
     }
 }
