@@ -615,6 +615,30 @@ mod tests {
     }
 
     #[test]
+    fn spacefarer_module_with_basic_nosecone_succeeds() {
+        let input = CalculatorInput {
+            rocket: RocketInput {
+                engine: EngineKind::Steam,
+                fuel_amount: 0.0,
+                oxidizer_input: None,
+                modules: vec![
+                    RocketModule::Spacefarer(SpacefarerKind::SpacefarerModule),
+                    RocketModule::Nosecone(NoseconeKind::BasicNosecone),
+                ],
+            },
+        };
+
+        let output = calculate(input).expect("SpacefarerModule + BasicNosecone should succeed");
+
+        assert_eq!(output.restrict, LimitingResource::Fuel);
+        assert_eq!(output.exact_range, 0.0);
+        assert_eq!(output.complete_range, 0);
+        assert!((output.speed - (27.0 / 23.0)).abs() < 1e-5);
+        assert_eq!(output.total_height, 11);
+        assert_eq!(output.total_burden, 23);
+    }
+
+    #[test]
     fn spacefarer_test() {
         let input = CalculatorInput {
             rocket: RocketInput {
