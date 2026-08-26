@@ -36,6 +36,11 @@ pub fn App() -> impl IntoView {
                 let mut modules = Vec::new();
                 // 指挥舱
                 modules.push(RocketModule::Spacefarer(current_spacefarer));
+                if current_spacefarer == SpacefarerKind::SpacefarerModule {
+                    modules.push(RocketModule::Nosecone(
+                        crate::models::NoseconeKind::BasicNosecone,
+                    ));
+                }
                 // 燃料舱
                 match current_engine.spec().fuel_storage {
                     FuelStorage::Internal { .. } => {}
