@@ -679,4 +679,21 @@ mod tests {
         assert_eq!(output.total_burden, 23);
         assert!((output.speed - (27f32 / 23f32)).abs() < 1e-5)
     }
+    #[test]
+    fn spacefarer_module_with_two_nosecones_fails() {
+        let input = CalculatorInput {
+            rocket: RocketInput {
+                engine: EngineKind::Steam,
+                fuel_amount: 100.0,
+                oxidizer_input: None,
+                modules: vec![
+                    RocketModule::Spacefarer(SpacefarerKind::SpacefarerModule),
+                    RocketModule::Nosecone(NoseconeKind::BasicNosecone),
+                    RocketModule::Nosecone(NoseconeKind::Drillcone),
+                ],
+            },
+        };
+
+        assert_eq!(calculate(input), Err(CalculatorError::ConeModuleTooMuch));
+    }
 }
