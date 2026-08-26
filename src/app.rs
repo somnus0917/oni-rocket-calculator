@@ -2,8 +2,8 @@ use crate::calculator::{
     CalculatorError, CalculatorInput, CalculatorResult, LimitingResource, calculate,
 };
 use crate::models::{
-    EngineKind, FuelStorage, FuelTankKind, OxidizerInput, OxidizerKind, OxidizerTankKind,
-    RocketInput, RocketModule, SpacefarerKind,
+    EngineKind, FuelStorage, FuelTankKind, NoseconeKind, OxidizerInput, OxidizerKind,
+    OxidizerTankKind, RocketInput, RocketModule, SpacefarerKind,
 };
 use leptos::{ev::MouseEvent, prelude::*};
 #[component]
@@ -17,6 +17,7 @@ pub fn App() -> impl IntoView {
     let engine = RwSignal::new(EngineKind::Steam);
     let engine_name = move || engine.get().spec().name;
     let spacefarer = RwSignal::new(SpacefarerKind::SoloSpacefarerNosecone);
+    let nosecone = RwSignal::new(NoseconeKind::BasicNosecone);
     let requires_oxidizer = move || engine.get().spec().requires_oxidizer;
     let result = RwSignal::new(None::<CalculatorResult>);
     let fuel_tank_count_input = RwSignal::new("1".to_string());
@@ -33,13 +34,12 @@ pub fn App() -> impl IntoView {
                 let current_engine = engine.get();
                 let current_oxidizer = oxidizer.get();
                 let current_spacefarer = spacefarer.get();
+                let current_nosecone = nosecone.get();
                 let mut modules = Vec::new();
                 // 指挥舱
                 modules.push(RocketModule::Spacefarer(current_spacefarer));
                 if current_spacefarer == SpacefarerKind::SpacefarerModule {
-                    modules.push(RocketModule::Nosecone(
-                        crate::models::NoseconeKind::BasicNosecone,
-                    ));
+                    modules.push(RocketModule::Nosecone(current_nosecone));
                 }
                 // 燃料舱
                 match current_engine.spec().fuel_storage {
@@ -126,6 +126,9 @@ pub fn App() -> impl IntoView {
         </label>
         <EngineSelector engine=engine/>
         <CommandModuleSelector spacefarer=spacefarer/>
+        <Show when=move || spacefarer.get() == SpacefarerKind::SpacefarerModule>
+            <NoseconeSelector nosecone=nosecone/>
+        </Show>
         <Show when=requires_external_fuel_tank>
             <label>
                 "燃料舱数量："
@@ -311,6 +314,30 @@ fn CommandModuleSelector(spacefarer: RwSignal<SpacefarerKind>) -> impl IntoView 
                                 name="spacefarer"
                                 prop:checked=move || spacefarer.get() == kind
                                 on:change=move |_| spacefarer.set(kind)
+                            />
+                        </label>
+                    }
+                }).collect_view()
+            }
+        </fieldset>
+    }
+}
+#[component]
+fn NoseconeSelector(nosecone: RwSignal<NoseconeKind>) -> impl IntoView {
+    view! {
+        <fieldset>
+            <legend>"前锥选择"</legend>
+            {
+                NoseconeKind::ALL.into_iter().map(|kind| {
+                    let name = kind.spec().name;
+                    view! {
+                        <label>
+                            {name}
+                            <input
+                                type="radio"
+                                name="nosecone"
+                                prop:checked=move || nosecone.get() == kind
+                                on:change=move |_| nosecone.set(kind)
                             />
                         </label>
                     }
