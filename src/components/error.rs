@@ -1,5 +1,20 @@
 use crate::calculator::CalculatorError;
+use leptos::prelude::*;
 
+#[component]
+pub fn ErrorDisplay(
+    calculator_error: ReadSignal<Option<CalculatorError>>,
+    form_error: ReadSignal<Option<&'static str>>,
+) -> impl IntoView {
+    view! {
+        {move || calculator_error.get().map(|error| view! {
+            <p class="error">{error_message_text(&error)}</p>
+        })}
+        {move || form_error.get().map(|message| view! {
+            <p class="error">{message}</p>
+        })}
+    }
+}
 pub fn error_message_text(error: &CalculatorError) -> &'static str {
     match error {
         CalculatorError::NegativeFuel => "燃料量不能为负数",

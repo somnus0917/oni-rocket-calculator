@@ -1,7 +1,7 @@
 use crate::calculator::{CalculatorError, CalculatorInput, CalculatorResult, calculate};
 use crate::components::{
-    CommandModuleSelector, EngineSelector, NoseconeSelector, OxidizerSelector,
-    OxidizerTankSelector, ResultDisplay, error_message_text,
+    CommandModuleSelector, EngineSelector, ErrorDisplay, NoseconeSelector, OxidizerSelector,
+    OxidizerTankSelector, ResultDisplay,
 };
 use crate::models::{
     EngineKind, FuelStorage, FuelTankKind, NoseconeKind, OxidizerInput, OxidizerKind,
@@ -175,20 +175,10 @@ pub fn App() -> impl IntoView {
                 </section>
                 <section class="panel result-panel">
                     <h2>"计算结果"</h2>
-                    {move || {
-                        calculator_error.get().map(|error| {
-                            view! {
-                                <p class="error">{error_message_text(&error)}</p>
-                            }
-                        })
-                    }}
-                    {move || {
-                        form_error.get().map(|message| {
-                            view! {
-                                <p class="error">{message}</p>
-                            }
-                        })
-                    }}
+                    <ErrorDisplay
+                        calculator_error=calculator_error.read_only()
+                        form_error=form_error.read_only()
+                    />
                     <ResultDisplay result=result.read_only()/>
                 </section>
             </div>
