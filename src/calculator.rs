@@ -459,6 +459,7 @@ mod tests {
                 4,
             ),
             (RocketModule::Nosecone(NoseconeKind::BasicNosecone), 2),
+            (RocketModule::Nosecone(NoseconeKind::Drillcone), 4),
         ];
 
         for (module, expected_height) in modules {
@@ -482,6 +483,7 @@ mod tests {
                 6,
             ),
             (RocketModule::Nosecone(NoseconeKind::BasicNosecone), 2),
+            (RocketModule::Nosecone(NoseconeKind::Drillcone), 2),
         ];
 
         for (module, expected_burden) in modules {
