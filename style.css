@@ -36,7 +36,7 @@ input {
 }
 
 .hero {
-    margin-bottom: 32px;
+    margin-bottom: 26px;
 }
 
 .eyebrow {
@@ -49,7 +49,7 @@ input {
 
 .hero h1 {
     margin: 0;
-    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-size: clamp(2rem, 4vw, 2.8rem);
 }
 
 .subtitle {
@@ -110,10 +110,10 @@ input {
 }
 
 .selector-group legend {
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     color: var(--muted);
-    font-size: 0.9rem;
-    font-weight: 700;
+    font-size: 0.76rem;
+    font-weight: 600;
 }
 
 .option-grid {
@@ -141,7 +141,10 @@ input {
 
 .option-card:has(input:checked) {
     border-color: var(--accent);
-    background: var(--accent-soft);
+    background: rgba(243, 201, 105, 0.06);
+    box-shadow:
+        0 0 0 1px rgba(243, 201, 105, 0.08),
+        inset 3px 0 0 var(--accent);
 }
 
 .option-card strong,
@@ -192,14 +195,19 @@ input[type="number"]:focus {
     padding: 13px 18px;
     border: 0;
     border-radius: 11px;
-    background: var(--accent);
+    background: #e8bd58;
     color: #211b0d;
     font-weight: 800;
     cursor: pointer;
+    transition:
+            background 0.15s ease,
+            transform 0.15s ease;
 }
 
 .calculate-button:hover {
+    background: #f3c969;
     filter: brightness(1.06);
+    transform: translateY(-1px);
 }
 
 .result-grid {
@@ -251,14 +259,17 @@ input[type="number"]:focus {
 
 .result-empty-icon {
     margin-bottom: 12px;
-    font-size: 2.5rem;
+    font-size: 2.2rem;
+    opacity: 0.9;
 }
 
 .result-empty strong {
     color: var(--text);
+    font-size: 1rem;
 }
 
 .result-empty p {
+    font-size: 0.85rem;
     max-width: 260px;
     margin: 8px 0 0;
     line-height: 1.6;
