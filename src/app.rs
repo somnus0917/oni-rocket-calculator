@@ -126,25 +126,47 @@ pub fn App() -> impl IntoView {
             <div class="calculator-layout">
                 <section class="panel config-panel">
                     <h2>"火箭配置"</h2>
-                    <label class="field">
-                        <span>"燃料量"</span>
-                        <input type="number" bind:value=fuel_amount/>
-                    </label>
-                    <EngineSelector engine=engine/>
-                    <CommandModuleSelector spacefarer=spacefarer/>
-                    <Show when=move || spacefarer.get() == SpacefarerKind::SpacefarerModule>
-                        <NoseconeSelector nosecone=nosecone/>
-                    </Show>
-                    <Show when=requires_external_fuel_tank>
+                    <div class="config-section">
+                        <div class="section-heading">
+                            <h3>"动力系统"</h3>
+                            <span>"选择火箭发动机"</span>
+                        </div>
+                        <EngineSelector engine=engine/>
+                    </div>
+
+                    <div class="config-section">
+                        <div class="section-heading">
+                            <h3>"载人结构"</h3>
+                            <span>"配置指挥舱与前锥"</span>
+                        </div>
+                        <CommandModuleSelector spacefarer=spacefarer/>
+                        <Show when=move || {
+                            spacefarer.get() == SpacefarerKind::SpacefarerModule
+                        }>
+                            <NoseconeSelector nosecone=nosecone/>
+                        </Show>
+                    </div>
+
+                    <div class="config-section">
+                        <div class="section-heading">
+                            <h3>"推进剂"</h3>
+                            <span>"配置燃料与氧化剂"</span>
+                        </div>
                         <label class="field">
-                            <span>"燃料舱数量"</span>
-                            <input type="number" min="0" bind:value=fuel_tank_count_input/>
+                            <span>"燃料量"</span>
+                            <input type="number" bind:value=fuel_amount/>
                         </label>
-                    </Show>
-                    <Show when=requires_oxidizer>
-                        <OxidizerSelector oxidizer=oxidizer oxidizer_amount=oxidizer_amount/>
-                        <OxidizerTankSelector oxidizer_tank=oxidizer_tank oxidizer_tank_count_input=oxidizer_tank_count_input/>
-                    </Show>
+                        <Show when=requires_external_fuel_tank>
+                            <label class="field">
+                                <span>"燃料舱数量"</span>
+                                <input type="number" min="0" bind:value=fuel_tank_count_input/>
+                            </label>
+                        </Show>
+                        <Show when=requires_oxidizer>
+                            <OxidizerSelector oxidizer=oxidizer oxidizer_amount=oxidizer_amount/>
+                            <OxidizerTankSelector oxidizer_tank=oxidizer_tank oxidizer_tank_count_input=oxidizer_tank_count_input/>
+                        </Show>
+                    </div>
                     <button class="calculate-button" on:click=on_calculate>
                         "计算火箭"
                     </button>

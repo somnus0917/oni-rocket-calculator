@@ -75,6 +75,34 @@ input {
     margin: 0 0 24px;
 }
 
+.config-section {
+    padding: 26px 0;
+    border-top: 1px solid var(--border);
+}
+
+.config-section:first-of-type {
+    padding-top: 0;
+    border-top: 0;
+}
+
+.section-heading {
+    margin-bottom: 20px;
+}
+
+.section-heading h3 {
+    margin: 0;
+    color: var(--text);
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.section-heading span {
+    display: block;
+    margin-top: 5px;
+    color: var(--muted);
+    font-size: 0.8rem;
+}
+
 .selector-group {
     padding: 0;
     margin: 0 0 28px;
@@ -264,5 +292,12 @@ input[type="number"]:focus {
 
     .result-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (min-width:801px){
+    .result-panel {
+        position: sticky;
+        top: 24px;
     }
 }
