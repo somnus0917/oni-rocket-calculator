@@ -13,9 +13,7 @@ pub fn App() -> impl IntoView {
     let oxidizer = RwSignal::new(OxidizerKind::LiquidOxygen);
     let oxidizer_tank = RwSignal::new(OxidizerTankKind::Liquid);
     let oxidizer_tank_count_input = RwSignal::new("1".to_string());
-    let oxidizer_name = move || oxidizer.get().spec().name;
     let engine = RwSignal::new(EngineKind::Steam);
-    let engine_name = move || engine.get().spec().name;
     let spacefarer = RwSignal::new(SpacefarerKind::SoloSpacefarerNosecone);
     let nosecone = RwSignal::new(NoseconeKind::BasicNosecone);
     let requires_oxidizer = move || engine.get().spec().requires_oxidizer;
@@ -118,87 +116,93 @@ pub fn App() -> impl IntoView {
     };
 
     view! {
-        <label>
-        "燃料量:"
-        <input type="number"
-            bind:value=fuel_amount
-        />
-        </label>
-        <EngineSelector engine=engine/>
-        <CommandModuleSelector spacefarer=spacefarer/>
-        <Show when=move || spacefarer.get() == SpacefarerKind::SpacefarerModule>
-            <NoseconeSelector nosecone=nosecone/>
-        </Show>
-        <Show when=requires_external_fuel_tank>
-            <label>
-                "燃料舱数量："
-                <input
-                    type="number"
-                    min="0"
-                    bind:value=fuel_tank_count_input
-                >
-                </input>
-            </label>
-        </Show>
-        <Show when=requires_oxidizer>
-            <OxidizerSelector oxidizer=oxidizer oxidizer_amount=oxidizer_amount/>
-            <OxidizerTankSelector oxidizer_tank=oxidizer_tank oxidizer_tank_count_input=oxidizer_tank_count_input/>
-        </Show>
-        <p>"你选择的引擎是" {engine_name} "."</p>
-        <p>"燃料量是: " {fuel_amount}</p>
-        <p>"是否需要氧化剂: " {requires_oxidizer}</p>
+        <main class="app-shell">
+            <header class="hero">
+                <p class="eyebrow">"OXYGEN NOT INCLUDED"</p>
+                <h1>"Rocket Calculator"</h1>
+                <p class="subtitle">"缺氧：眼冒金星 火箭配置与航程计算"</p>
+            </header>
 
-        <Show when=requires_oxidizer>
-        <p>"你选择的氧化剂是" {oxidizer_name} "."</p>
-        <p>"氧化剂量是: " {oxidizer_amount}</p>
-        </Show>
-        <button on:click=on_calculate>
-            "计算"
-        </button>
-        {move || {
-            calculator_error.get().map(|error| {
-                view! {
-                    <p class="error">{error_message_text(&error)}</p>
-                }
-            })
-        }}
-        {move || {
-            form_error.get().map(|message| {
-                view! {
-                    <p class="error">{message}</p>
-                }
-            })
-        }}
-        <ResultDisplay result=result.read_only()/>
-
+            <div class="calculator-layout">
+                <section class="panel config-panel">
+                    <h2>"火箭配置"</h2>
+                    <label class="field">
+                        <span>"燃料量"</span>
+                        <input type="number" bind:value=fuel_amount/>
+                    </label>
+                    <EngineSelector engine=engine/>
+                    <CommandModuleSelector spacefarer=spacefarer/>
+                    <Show when=move || spacefarer.get() == SpacefarerKind::SpacefarerModule>
+                        <NoseconeSelector nosecone=nosecone/>
+                    </Show>
+                    <Show when=requires_external_fuel_tank>
+                        <label class="field">
+                            <span>"燃料舱数量"</span>
+                            <input type="number" min="0" bind:value=fuel_tank_count_input/>
+                        </label>
+                    </Show>
+                    <Show when=requires_oxidizer>
+                        <OxidizerSelector oxidizer=oxidizer oxidizer_amount=oxidizer_amount/>
+                        <OxidizerTankSelector oxidizer_tank=oxidizer_tank oxidizer_tank_count_input=oxidizer_tank_count_input/>
+                    </Show>
+                    <button class="calculate-button" on:click=on_calculate>
+                        "计算火箭"
+                    </button>
+                </section>
+                <section class="panel result-panel">
+                    <h2>"计算结果"</h2>
+                    {move || {
+                        calculator_error.get().map(|error| {
+                            view! {
+                                <p class="error">{error_message_text(&error)}</p>
+                            }
+                        })
+                    }}
+                    {move || {
+                        form_error.get().map(|message| {
+                            view! {
+                                <p class="error">{message}</p>
+                            }
+                        })
+                    }}
+                    <ResultDisplay result=result.read_only()/>
+                </section>
+            </div>
+        </main>
     }
 }
 
 #[component]
 fn EngineSelector(engine: RwSignal<EngineKind>) -> impl IntoView {
     view! {
-        <fieldset>
-            <legend>"火箭选择"</legend>
+        <fieldset class="selector-group">
+            <legend>"引擎"</legend>
+            <div class="option-grid">
             {
                 EngineKind::ALL.into_iter().map(|kind| {
-                    let name = kind.spec().name;
+                    let spec=kind.spec();
                     view! {
-                        <label>
-                            {name}
+                        <label class="option-card">
                             <input
                                 type="radio"
                                 name="engine"
-                                prop:checked=move||{
-                                engine.get()==kind
-                            }
-                            on:change=move|_|{
-                                engine.set(kind);
-                            }
+                                prop:checked=move || engine.get()==kind
+                                on:change=move |_| engine.set(kind)
                             />
+                            <div>
+                                <strong>
+                                    {spec.name}
+                                </strong>
+                                <span class="option-meta">
+                                    {format!("动力 {}",spec.engine_power)}
+                                </span>
+                            </div>
                         </label>
+
                     }
                 }).collect_view()
             }
+            </div>
         </fieldset>
     }
 }
@@ -209,33 +213,34 @@ fn OxidizerSelector(
     oxidizer_amount: RwSignal<String>,
 ) -> impl IntoView {
     view! {
-        <fieldset>
+        <fieldset class="selector-group">
             <legend>"氧化剂"</legend>
-            {
-                OxidizerKind::ALL.into_iter().map(|kind| {
-                    let name = kind.spec().name;
-                    view! {
-                        <label>
-                            {name}
-                            <input
-                            type="radio"
-                            name="oxidizer"
-                            prop:checked=move||{
-                                oxidizer.get()==kind
-                            }
-                            on:change=move|_|{
-                                oxidizer.set(kind);
-                            }
-                            />
-                        </label>
-                    }
-                }).collect_view()
-            }
-            <label>
-                "\n 氧化剂量："
-                <input type="number"
-                    bind:value=oxidizer_amount
-                />
+            <div class="option-grid">
+                {
+                    OxidizerKind::ALL.into_iter().map(|kind| {
+                        let spec = kind.spec();
+                        view! {
+                            <label class="option-card">
+                                <input
+                                    type="radio"
+                                    name="oxidizer"
+                                    prop:checked=move || oxidizer.get() == kind
+                                    on:change=move |_| oxidizer.set(kind)
+                                />
+                                <div>
+                                    <strong>{spec.name}</strong>
+                                    <span class="option-meta">
+                                        {format!("效率 {:.1}", spec.efficiency)}
+                                    </span>
+                                </div>
+                            </label>
+                        }
+                    }).collect_view()
+                }
+            </div>
+            <label class="field">
+                <span>"氧化剂量"</span>
+                <input type="number" bind:value=oxidizer_amount/>
             </label>
         </fieldset>
     }
@@ -247,35 +252,34 @@ fn OxidizerTankSelector(
     oxidizer_tank_count_input: RwSignal<String>,
 ) -> impl IntoView {
     view! {
-        <fieldset>
+        <fieldset class="selector-group">
             <legend>"氧化剂舱"</legend>
-            {
-                OxidizerTankKind::ALL.into_iter().map(|kind| {
-                    let name = kind.spec().name;
-                    view! {
-                        <label>
-                            {name}
-                            <input
-                                type="radio"
-                                name="oxidizer_tank"
-                                prop:checked=move ||{
-                                    oxidizer_tank.get()==kind
-                                }
-                                on:change=move |_| {
-                                    oxidizer_tank.set(kind);
-                                }
+            <div class="option-grid">
+                {
+                    OxidizerTankKind::ALL.into_iter().map(|kind| {
+                        let spec = kind.spec();
+                        view! {
+                            <label class="option-card">
+                                <input
+                                    type="radio"
+                                    name="oxidizer_tank"
+                                    prop:checked=move || oxidizer_tank.get() == kind
+                                    on:change=move |_| oxidizer_tank.set(kind)
                                 />
-                        </label>
-                    }
-                }).collect_view()
-            }
-            <label>
-                "氧化剂舱数量："
-                <input
-                    type="number"
-                    min="0"
-                    bind:value=oxidizer_tank_count_input
-                />
+                                <div>
+                                    <strong>{spec.name}</strong>
+                                    <span class="option-meta">
+                                        {format!("容量 {}", spec.capacity)}
+                                    </span>
+                                </div>
+                            </label>
+                        }
+                    }).collect_view()
+                }
+            </div>
+            <label class="field">
+                <span>"氧化剂舱数量"</span>
+                <input type="number" min="0" bind:value=oxidizer_tank_count_input/>
             </label>
         </fieldset>
     }
@@ -283,66 +287,98 @@ fn OxidizerTankSelector(
 #[component]
 fn ResultDisplay(result: ReadSignal<Option<CalculatorResult>>) -> impl IntoView {
     view! {
-        {move || {
-            result.get().map(|value| {
-                format!(
-                    "理论航程: {:.2}，完整航程: {}，速度：{:.2}格/周期，限制资源: {}，总高度：{}，总负担：{}",
-                    value.exact_range,
-                    value.complete_range,
-                    value.speed,
-                    limiting_resource_message(&value.restrict),
-                    value.total_height,
-                    value.total_burden,
-                )
-            })
-        }}
+        {move || result.get().map(|value| view! {
+            <div class="result-grid">
+                <div class="result-card result-primary">
+                    <span>"理论航程"</span>
+                    <strong>{format!("{:.2}", value.exact_range)}</strong>
+                    <small>"格"</small>
+                </div>
+                <div class="result-card">
+                    <span>"完整航程"</span>
+                    <strong>{value.complete_range}</strong>
+                    <small>"格"</small>
+                </div>
+                <div class="result-card">
+                    <span>"火箭速度"</span>
+                    <strong>{format!("{:.2}", value.speed)}</strong>
+                    <small>"格 / 周期"</small>
+                </div>
+                <div class="result-card">
+                    <span>"总高度"</span>
+                    <strong>{value.total_height}</strong>
+                </div>
+                <div class="result-card">
+                    <span>"总负担"</span>
+                    <strong>{value.total_burden}</strong>
+                </div>
+                <div class="result-card">
+                    <span>"限制资源"</span>
+                    <strong>{limiting_resource_message(&value.restrict)}</strong>
+                </div>
+            </div>
+        })}
     }
 }
 #[component]
 fn CommandModuleSelector(spacefarer: RwSignal<SpacefarerKind>) -> impl IntoView {
     view! {
-        <fieldset>
+        <fieldset class="selector-group">
             <legend>"指挥舱选择"</legend>
-            {
-                SpacefarerKind::ALL.into_iter().map(|kind| {
-                    let name = kind.spec().name;
-                    view! {
-                        <label>
-                            {name}
-                            <input
-                                type="radio"
-                                name="spacefarer"
-                                prop:checked=move || spacefarer.get() == kind
-                                on:change=move |_| spacefarer.set(kind)
-                            />
-                        </label>
-                    }
-                }).collect_view()
-            }
+            <div class="option-grid">
+                {
+                    SpacefarerKind::ALL.into_iter().map(|kind| {
+                        let spec = kind.spec();
+                        view! {
+                            <label class="option-card">
+                                <input
+                                    type="radio"
+                                    name="spacefarer"
+                                    prop:checked=move || spacefarer.get() == kind
+                                    on:change=move |_| spacefarer.set(kind)
+                                />
+                                <div>
+                                    <strong>{spec.name}</strong>
+                                    <span class="option-meta">
+                                        {format!("负担 {} · 高度 {}", spec.burden, spec.height)}
+                                    </span>
+                                </div>
+                            </label>
+                        }
+                    }).collect_view()
+                }
+            </div>
         </fieldset>
     }
 }
 #[component]
 fn NoseconeSelector(nosecone: RwSignal<NoseconeKind>) -> impl IntoView {
     view! {
-        <fieldset>
+        <fieldset class="selector-group">
             <legend>"前锥选择"</legend>
-            {
-                NoseconeKind::ALL.into_iter().map(|kind| {
-                    let name = kind.spec().name;
-                    view! {
-                        <label>
-                            {name}
-                            <input
-                                type="radio"
-                                name="nosecone"
-                                prop:checked=move || nosecone.get() == kind
-                                on:change=move |_| nosecone.set(kind)
-                            />
-                        </label>
-                    }
-                }).collect_view()
-            }
+            <div class="option-grid">
+                {
+                    NoseconeKind::ALL.into_iter().map(|kind| {
+                        let spec = kind.spec();
+                        view! {
+                            <label class="option-card">
+                                <input
+                                    type="radio"
+                                    name="nosecone"
+                                    prop:checked=move || nosecone.get() == kind
+                                    on:change=move |_| nosecone.set(kind)
+                                />
+                                <div>
+                                    <strong>{spec.name}</strong>
+                                    <span class="option-meta">
+                                        {format!("负担 {} · 高度 {}", spec.burden, spec.height)}
+                                    </span>
+                                </div>
+                            </label>
+                        }
+                    }).collect_view()
+                }
+            </div>
         </fieldset>
     }
 }

@@ -1,4 +1,233 @@
+:root {
+    --bg: #0d1117;
+    --surface: #151b23;
+    --surface-2: #1c2430;
+    --border: #2c3745;
+    --text: #eef3f8;
+    --muted: #8f9dab;
+    --accent: #f3c969;
+    --accent-soft: rgba(243, 201, 105, 0.12);
+    --danger: #ff7474;
+
+    font-family: Inter, "Noto Sans SC", system-ui, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: radial-gradient(circle at top, #192331 0, var(--bg) 45%);
+}
+
+button,
+input {
+    font: inherit;
+}
+
+.app-shell {
+    width: min(1180px, calc(100% - 32px));
+    margin: 0 auto;
+    padding: 48px 0 64px;
+}
+
+.hero {
+    margin-bottom: 32px;
+}
+
+.eyebrow {
+    margin: 0 0 8px;
+    color: var(--accent);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+}
+
+.hero h1 {
+    margin: 0;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+}
+
+.subtitle {
+    margin-top: 10px;
+    color: var(--muted);
+}
+
+.calculator-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.8fr);
+    gap: 24px;
+    align-items: start;
+}
+
+.panel {
+    padding: 24px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: rgba(21, 27, 35, 0.92);
+}
+
+.panel h2 {
+    margin: 0 0 24px;
+}
+
+.selector-group {
+    padding: 0;
+    margin: 0 0 28px;
+    border: 0;
+}
+
+.selector-group legend {
+    margin-bottom: 12px;
+    color: var(--muted);
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.option-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.option-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface-2);
+    cursor: pointer;
+    transition: border-color 0.15s ease, transform 0.15s ease, background 0.15s ease;
+}
+
+.option-card:hover {
+    transform: translateY(-1px);
+    border-color: #536274;
+}
+
+.option-card:has(input:checked) {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+}
+
+.option-card strong,
+.option-card span {
+    display: block;
+}
+
+.option-meta {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 0.8rem;
+}
+
+.field {
+    display: block;
+    margin-bottom: 22px;
+    color: var(--muted);
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+input[type="number"] {
+    width: 100%;
+    margin-top: 8px;
+    padding: 11px 12px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #0f151d;
+    color: var(--text);
+}
+
+input[type="number"]:focus {
+    outline: 2px solid var(--accent-soft);
+    border-color: var(--accent);
+}
+
+.calculate-button {
+    width: 100%;
+    margin-top: 4px;
+    padding: 13px 18px;
+    border: 0;
+    border-radius: 11px;
+    background: var(--accent);
+    color: #211b0d;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.calculate-button:hover {
+    filter: brightness(1.06);
+}
+
+.result-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.result-card {
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface-2);
+}
+
+.result-card span {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--muted);
+    font-size: 0.8rem;
+}
+
+.result-card strong {
+    display: inline-block;
+    font-size: 1.45rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.result-card small {
+    margin-left: 5px;
+    color: var(--muted);
+}
+
+.result-primary {
+    border-color: rgba(243, 201, 105, 0.45);
+}
+
 .error {
-    color: red;
-    font-weight: bold;
+    margin-bottom: 12px;
+    padding: 12px 14px;
+    border: 1px solid rgba(255, 116, 116, 0.3);
+    border-radius: 10px;
+    color: var(--danger);
+    background: rgba(255, 116, 116, 0.08);
+    font-weight: 600;
+}
+
+@media (max-width: 800px) {
+    .calculator-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 520px) {
+    .app-shell {
+        width: min(100% - 20px, 1180px);
+        padding-top: 28px;
+    }
+
+    .panel {
+        padding: 18px;
+    }
+
+    .result-grid {
+        grid-template-columns: 1fr;
+    }
 }
