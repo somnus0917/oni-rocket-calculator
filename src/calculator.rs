@@ -28,6 +28,8 @@ pub enum CalculatorError {
     RocketExceedsMaxHeight,
     CommandModuleTooMuch,
     CommandModuleTooLess,
+    ConeModuleTooMuch,
+    ConeModuleTooLess,
 }
 
 pub fn calculate(input: CalculatorInput) -> Result<CalculatorResult, CalculatorError> {
@@ -48,6 +50,23 @@ pub fn calculate(input: CalculatorInput) -> Result<CalculatorResult, CalculatorE
     }
     if command_module_count > 1 {
         return Err(CalculatorError::CommandModuleTooMuch);
+    }
+    let nosecone_count = rocket
+        .modules
+        .iter()
+        .filter(|module| {
+            matches!(
+                module,
+                RocketModule::Nosecone(_)
+                    | RocketModule::Spacefarer(SpacefarerKind::SoloSpacefarerNosecone)
+            )
+        })
+        .count();
+    if nosecone_count == 0 {
+        return Err(CalculatorError::ConeModuleTooLess);
+    }
+    if nosecone_count > 1 {
+        return Err(CalculatorError::ConeModuleTooMuch);
     }
     let total_height = engine.height + module_height;
     if total_height > engine.max_rocket_height {
@@ -562,6 +581,37 @@ mod tests {
         };
 
         assert_eq!(calculate(input), Err(CalculatorError::CommandModuleTooMuch));
+    }
+
+    #[test]
+    fn cone_module_too_less() {
+        let input = CalculatorInput {
+            rocket: RocketInput {
+                engine: EngineKind::Steam,
+                fuel_amount: 0.0,
+                oxidizer_input: None,
+                modules: vec![RocketModule::Spacefarer(SpacefarerKind::SpacefarerModule)],
+            },
+        };
+
+        assert_eq!(calculate(input), Err(CalculatorError::ConeModuleTooLess));
+    }
+
+    #[test]
+    fn cone_module_too_much() {
+        let input = CalculatorInput {
+            rocket: RocketInput {
+                engine: EngineKind::Steam,
+                fuel_amount: 0.0,
+                oxidizer_input: None,
+                modules: vec![
+                    RocketModule::Spacefarer(SpacefarerKind::SoloSpacefarerNosecone),
+                    RocketModule::Nosecone(NoseconeKind::BasicNosecone),
+                ],
+            },
+        };
+
+        assert_eq!(calculate(input), Err(CalculatorError::ConeModuleTooMuch));
     }
 
     #[test]
