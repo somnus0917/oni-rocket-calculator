@@ -357,8 +357,8 @@ pub fn error_message_text(error: &CalculatorError) -> &'static str {
         CalculatorError::RocketExceedsMaxHeight => "火箭超过最大高度",
         CalculatorError::CommandModuleTooLess => "指挥舱数量不能为0",
         CalculatorError::CommandModuleTooMuch => "指挥舱数量不能多于1个",
-        CalculatorError::ConeModuleTooLess => "前锥数量不能为0",
-        CalculatorError::ConeModuleTooMuch => "前锥数量不能多于1个",
+        CalculatorError::MissingNosecone => "前锥数量不能为0",
+        CalculatorError::MultipleNosecones => "前锥数量不能多于1个",
     }
 }
 

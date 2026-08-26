@@ -28,8 +28,8 @@ pub enum CalculatorError {
     RocketExceedsMaxHeight,
     CommandModuleTooMuch,
     CommandModuleTooLess,
-    ConeModuleTooMuch,
-    ConeModuleTooLess,
+    MultipleNosecones,
+    MissingNosecone,
 }
 
 pub fn calculate(input: CalculatorInput) -> Result<CalculatorResult, CalculatorError> {
@@ -63,10 +63,10 @@ pub fn calculate(input: CalculatorInput) -> Result<CalculatorResult, CalculatorE
         })
         .count();
     if nosecone_count == 0 {
-        return Err(CalculatorError::ConeModuleTooLess);
+        return Err(CalculatorError::MissingNosecone);
     }
     if nosecone_count > 1 {
-        return Err(CalculatorError::ConeModuleTooMuch);
+        return Err(CalculatorError::MultipleNosecones);
     }
     let total_height = engine.height + module_height;
     if total_height > engine.max_rocket_height {
@@ -596,7 +596,7 @@ mod tests {
             },
         };
 
-        assert_eq!(calculate(input), Err(CalculatorError::ConeModuleTooLess));
+        assert_eq!(calculate(input), Err(CalculatorError::MissingNosecone));
     }
 
     #[test]
@@ -613,7 +613,7 @@ mod tests {
             },
         };
 
-        assert_eq!(calculate(input), Err(CalculatorError::ConeModuleTooMuch));
+        assert_eq!(calculate(input), Err(CalculatorError::MultipleNosecones));
     }
 
     #[test]
@@ -694,6 +694,6 @@ mod tests {
             },
         };
 
-        assert_eq!(calculate(input), Err(CalculatorError::ConeModuleTooMuch));
+        assert_eq!(calculate(input), Err(CalculatorError::MultipleNosecones));
     }
 }
